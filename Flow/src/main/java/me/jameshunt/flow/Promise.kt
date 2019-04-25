@@ -19,15 +19,15 @@ fun Executor?.dispatch(execute: () -> Unit ) {
 open class Promise<OUT> {
     sealed class Result<T> {
         class Resolved<T>(val value: T) : Result<T>()
-        class Rejected<T>(val error: Throwable) : Result<T>()
+        class Rejected<T>(val error: Exception) : Result<T>()
 
-        var errorOrNull: Throwable? = (this as? Rejected)?.error
+        var errorOrNull: Exception? = (this as? Rejected)?.error
         var valueOrNull: T? = (this as? Resolved)?.value
     }
 
     sealed class Status<T> {
         class Resolved<T>(val value: T) : Status<T>()
-        class Rejected<T>(val error: Throwable) : Status<T>()
+        class Rejected<T>(val error: Exception) : Status<T>()
         class Pending<T>: Status<T>()
 
         val isRejected get() = this is Rejected<T>
@@ -79,10 +79,10 @@ open class Promise<OUT> {
             return try {
                 val out = dispatch(value)
                 Status.Resolved(out)
-            } catch (err: Throwable) {
+            } catch (err: Exception) {
                 try {
                     recover(err)
-                } catch (err2: Throwable) {
+                } catch (err2: Exception) {
                     Status.Rejected(err2)
                 }
             }
@@ -96,14 +96,14 @@ open class Promise<OUT> {
                         is Status.Resolved -> this.status = execute(result.value)
                         is Status.Rejected -> this.status = recover(result.error)
                     }
-                } catch (t: Throwable) { this.status = Status.Rejected(t)
+                } catch (t: Exception) { this.status = Status.Rejected(t)
                 } finally { always() }
             }
         }
 
         abstract fun dispatch(value: IN): OUT
         open fun always() {}
-        open fun recover(error: Throwable): Status<OUT> =
+        open fun recover(error: Exception): Status<OUT> =
             Status.Rejected(error)
 
         override fun add(child: Input<OUT>) {
@@ -122,16 +122,16 @@ open class Promise<OUT> {
     private class BasicContinuation<T,RT>(
                 executor: Executor? = null,
                 val then: (T) -> RT,
-                val recover: ((Throwable) -> RT)? = null,
+                val recover: ((Exception) -> RT)? = null,
                 val always: (() -> Unit)? = null)
             : Continuation<T, RT>(executor) {
 
         override fun dispatch(value: T): RT = then(value)
-        override fun recover(error: Throwable): Status<RT> {
+        override fun recover(error: Exception): Status<RT> {
             val recover = this.recover ?: return Status.Rejected(error)
             return try {
                 Status.Resolved(recover(error))
-            } catch (err: Throwable) {
+            } catch (err: Exception) {
                 Status.Rejected(err)
             }
         }
@@ -142,7 +142,7 @@ open class Promise<OUT> {
     private class DeferredContinuation<T>(executor: Executor? = null) : Continuation<T, T>(executor) {
         override fun dispatch(value: T): T = value
         fun resolve(value: T) = resolve(Status.Resolved(value))
-        fun reject(error: Throwable) = resolve(Status.Rejected(error))
+        fun reject(error: Exception) = resolve(Status.Rejected(error))
     }
 
     protected class ResolvedContinuation<T>(value: Status<T>) : Continuation<T, T>(null) {
@@ -163,7 +163,7 @@ open class Promise<OUT> {
     val isRejected: Boolean get() = this.status.isRejected
     val isResolved: Boolean get() = this.status.isResolved
 
-    constructor(on: Executor? = null, execute: ((OUT) -> Unit, (Throwable) -> Unit) -> Unit) {
+    constructor(on: Executor? = null, execute: ((OUT) -> Unit, (Exception) -> Unit) -> Unit) {
         val cont = DeferredContinuation<OUT>()
         this.output = cont
 
@@ -182,13 +182,13 @@ open class Promise<OUT> {
         )
     }
 
-    constructor(error: Throwable) {
+    constructor(error: Exception) {
         this.output = ResolvedContinuation(
             Status.Rejected(error)
         )
     }
 
-    fun recover(on: Executor?, execute: (Throwable) -> OUT): Promise<OUT> {
+    fun recover(on: Executor?, execute: (Exception) -> OUT): Promise<OUT> {
         val cont = BasicContinuation<OUT, OUT>(
             executor = on,
             then = { it },
@@ -204,7 +204,7 @@ open class Promise<OUT> {
         return Promise(cont)
     }
 
-    fun catch(on: Executor?, execute: (Throwable) -> Unit): Promise<OUT> {
+    fun catch(on: Executor?, execute: (Exception) -> Unit): Promise<OUT> {
         val cont =
             BasicContinuation<OUT, Unit>(executor = on, then = {}, recover = execute)
         this.output.add(cont)
@@ -232,7 +232,7 @@ open class Promise<OUT> {
         return Promise(output)
     }
 
-    fun recoverp(on: Executor?, execute: (Throwable) -> Promise<OUT>): Promise<OUT> {
+    fun recoverp(on: Executor?, execute: (Exception) -> Promise<OUT>): Promise<OUT> {
         val outer = BasicContinuation<OUT, Promise<OUT>>(
             executor = on,
             then = { Promise(it) },
@@ -324,7 +324,7 @@ open class Promise<OUT> {
 class DeferredPromise<T> {
     val promise: Promise<T>
     private var _resolve: ((T) -> Unit)? = null
-    private var _reject: ((Throwable) -> Unit)? = null
+    private var _reject: ((Exception) -> Unit)? = null
 
     init {
         promise = Promise { resolve, reject ->
@@ -337,7 +337,7 @@ class DeferredPromise<T> {
         this._resolve?.let { it(value) }
     }
 
-    fun reject(error: Throwable) {
+    fun reject(error: Exception) {
         this._reject?.let{ it(error) }
     }
 }
