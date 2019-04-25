@@ -2,20 +2,21 @@ package me.jameshunt.flow
 
 object FlowManager {
 
-    private var _rootFlow: FlowController<Unit, Unit>? = null
+    private var _rootFlow: FlowController<*, Unit>? = null
 
     val shouldResume: Boolean
         get() = this._rootFlow != null
 
-    fun launchFlow(getInitialFlow: () -> FlowController<Unit,Unit>, onFlowFinished: () -> Unit) {
-        this._rootFlow = getInitialFlow()
-
-        this._rootFlow!!.launchFlow(Unit)
-            .catch { it.printStackTrace() }
-            .always {
-                this._rootFlow = null
-                onFlowFinished()
-                println("flow completed")
-            }
+    fun <Input> launchFlow(getInitialFlow: () -> FlowController<Input, Unit>, args: Input, onFlowFinished: () -> Unit) {
+        this._rootFlow = getInitialFlow().also { rootFlow ->
+            rootFlow
+                .launchFlow(args)
+                .catch { it.printStackTrace() }
+                .always {
+                    this._rootFlow = null
+                    onFlowFinished()
+                    println("flow completed")
+                }
+        }
     }
 }

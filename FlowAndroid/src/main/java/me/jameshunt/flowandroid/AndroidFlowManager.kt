@@ -14,6 +14,7 @@ object AndroidFlowManager {
     }
 
     private lateinit var flowActivity: WeakReference<FlowActivity>
+    internal lateinit var rootViewManager: WeakReference<RootViewManager>
 
     fun launchFlow(flowActivity: FlowActivity) {
         this.flowActivity = WeakReference(flowActivity)
@@ -22,6 +23,7 @@ object AndroidFlowManager {
             true -> this.resumeLeafFlowControllers()
             false -> FlowManager.launchFlow(
                 getInitialFlow = flowActivity::getInitialFlow,
+                args = flowActivity.getInitialArgs(),
                 onFlowFinished = { this.flowActivity.get()!!.onFlowFinished() }
             )
         }
