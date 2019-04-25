@@ -5,7 +5,7 @@ import me.jameshunt.flow.Promise
 
 typealias ViewId = Int
 
-abstract class FragmentFlowController<Input, Output>(val viewId: ViewId) : FlowController<Input, Output>() {
+abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
 
     protected fun <NewInput, NewOutput> flow(
         controller: Class<FragmentFlowController<NewInput, NewOutput>>,
@@ -19,5 +19,17 @@ abstract class FragmentFlowController<Input, Output>(val viewId: ViewId) : FlowC
         childFlows.add(flowController)
 
         return flowController.launchFlow(arg)
+    }
+
+    fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
+        fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
+        args: FragInput
+    ): Promise<FragOutput> {
+        val displayManager = AndroidFlowManager.fragmentDisplayManager.get()
+            ?: throw IllegalStateException("Should never happen")
+
+        return displayManager
+            .show(fragmentProxy = fragmentProxy, args = args, viewId = this.viewId)
+            .flowForResult(args)
     }
 }

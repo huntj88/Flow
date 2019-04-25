@@ -9,7 +9,7 @@ class MainActivity : FlowActivity() {
 
     override fun getInitialArgs(): FragmentGroupFlowController.FlowsInGroup = FragmentGroupFlowController.FlowsInGroup(
         mapOf(
-            R.id.topLayout to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>
+            R.id.singleLayout to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>
 //            R.id.bottomLayout to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>
         )
     )

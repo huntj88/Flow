@@ -15,6 +15,7 @@ object AndroidFlowManager {
 
     private lateinit var flowActivity: WeakReference<FlowActivity>
     internal lateinit var rootViewManager: WeakReference<RootViewManager>
+    internal lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
 
     fun launchFlow(flowActivity: FlowActivity) {
         this.flowActivity = WeakReference(flowActivity)

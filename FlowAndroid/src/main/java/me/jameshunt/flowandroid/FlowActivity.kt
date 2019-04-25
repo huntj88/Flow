@@ -7,17 +7,15 @@ import java.lang.ref.WeakReference
 
 abstract class FlowActivity : AppCompatActivity() {
 
-//    private val fragmentDisplayManager = FragmentDisplayManager(this.supportFragmentManager)
-
     private val rootViewManager: RootViewManager by lazy { RootViewManager(this) }
+    private val fragmentDisplayManager = FragmentDisplayManager(this.supportFragmentManager)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_flow)
 
         AndroidFlowManager.rootViewManager = WeakReference(this.rootViewManager)
-//        AndroidFlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
-//        FlowManager.rootView = WeakReference(this.initialFrameLayout)
+        AndroidFlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
 
         AndroidFlowManager.launchFlow(flowActivity = this)
     }
