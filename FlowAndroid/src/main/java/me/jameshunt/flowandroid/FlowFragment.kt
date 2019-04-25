@@ -7,20 +7,20 @@ abstract class FlowFragment<Input, Output> : Fragment() {
 
     lateinit var proxy: FragmentProxy<Input, Output, *>
 
-    private var args: Input? = null
+    private var arg: Input? = null
 
-    fun flowForResult(args: Input): Promise<Output> {
+    fun flowForResult(arg: Input): Promise<Output> {
 
-        this.args = args
+        this.arg = arg
 
         this.view?.let {
-            this.flowWillRun(args)
+            this.flowWillRun(arg)
         }
 
         return proxy.deferredPromise.promise
     }
 
-    abstract fun flowWillRun(args: Input)
+    abstract fun flowWillRun(arg: Input)
 
     fun resolve(output: Output) {
         this.proxy.resolve(output)
@@ -28,7 +28,7 @@ abstract class FlowFragment<Input, Output> : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        this.args?.let {
+        this.arg?.let {
             this.flowWillRun(it)
         }
     }

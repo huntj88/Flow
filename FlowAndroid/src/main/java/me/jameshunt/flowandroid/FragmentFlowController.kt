@@ -23,13 +23,13 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
-        args: FragInput
+        arg: FragInput
     ): Promise<FragOutput> {
         val displayManager = AndroidFlowManager.fragmentDisplayManager.get()
             ?: throw IllegalStateException("Should never happen")
 
         return displayManager
-            .show(fragmentProxy = fragmentProxy, args = args, viewId = this.viewId)
-            .flowForResult(args)
+            .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
+            .flowForResult(arg)
     }
 }

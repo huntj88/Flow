@@ -3,6 +3,7 @@ package me.jameshunt.flowandroid
 import androidx.fragment.app.Fragment
 import me.jameshunt.flow.DeferredPromise
 import java.lang.ref.WeakReference
+import java.util.*
 
 class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>>(
     internal val clazz: Class<FragmentType>
@@ -11,6 +12,8 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
     private lateinit var fragment: WeakReference<FragmentType>
 
     private var state: Fragment.SavedState? = null
+
+    internal val tag = UUID.randomUUID().toString()
 
     internal var deferredPromise = DeferredPromise<FragOutput>()
         private set
