@@ -19,4 +19,8 @@ object FlowManager {
                 }
         }
     }
+
+    fun delegateBack() {
+        _rootFlow!!.handleBack()
+    }
 }

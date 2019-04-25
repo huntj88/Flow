@@ -11,4 +11,8 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
         fragmentManager.beginTransaction().replace(viewId, fragment, fragmentProxy.tag).commit()
         return fragment
     }
+
+    fun remove(activeFragment: FragmentProxy<*, *, *>?) {
+        fragmentManager.beginTransaction().remove(activeFragment?.fragment?.get()!!).commit()
+    }
 }

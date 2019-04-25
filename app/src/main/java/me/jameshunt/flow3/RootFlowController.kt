@@ -1,40 +1,41 @@
 package me.jameshunt.flow3
 
 import android.util.Log
-import me.jameshunt.flow.always
+import me.jameshunt.flow.back
+import me.jameshunt.flow.complete
 import me.jameshunt.flowandroid.FragmentFlowController
 import me.jameshunt.flowandroid.FragmentProxy
 import me.jameshunt.flowandroid.ViewId
 
-class RootFlowController(viewId: ViewId): GeneratedRootFlow<Unit, Unit>(viewId) {
+class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId) {
 
     private val testFragmentProxy = FragmentProxy(TestFragment::class.java)
     private val testFragmentProxy2 = FragmentProxy(TestFragment::class.java)
 
     override fun onStart(state: InitialState<Unit>) {
-        Log.d("root","start")
+        Log.d("root", "start")
         state.toDeepLink("hello")
     }
 
     override fun onDeepLink(state: DeepLink) {
-        Log.d("root",state.arg)
-        this.flow(fragmentProxy = testFragmentProxy, arg = state.arg).always {
+        Log.d("root", state.arg)
+        this.flow(fragmentProxy = testFragmentProxy, arg = state.arg).complete {
             state.toDeepLink2("wooow")
         }
     }
 
     override fun onDeepLink2(state: DeepLink2) {
-        Log.d("root",state.arg)
-        this.flow(fragmentProxy = testFragmentProxy2, arg = state.arg).always {
-            Log.d("root","fragment resolved")
-        }
+        Log.d("root", state.arg)
+        this.flow(fragmentProxy = testFragmentProxy2, arg = state.arg)
+            .complete { Log.d("root", "fragment resolved") }
+            .back { state.toBack() }
     }
 }
 
-abstract class GeneratedRootFlow<Input, Output>(viewId: ViewId): FragmentFlowController<Input, Output>(viewId) {
+abstract class GeneratedRootFlow<Input, Output>(viewId: ViewId) : FragmentFlowController<Input, Output>(viewId) {
 
-    data class DeepLink(val arg: String): State
-    data class DeepLink2(val arg: String): State
+    data class DeepLink(val arg: String) : State
+    data class DeepLink2(val arg: String) : State
 
     abstract fun onDeepLink(state: DeepLink)
     abstract fun onDeepLink2(state: DeepLink2)
@@ -49,6 +50,10 @@ abstract class GeneratedRootFlow<Input, Output>(viewId: ViewId): FragmentFlowCon
         this.transition(to = DeepLink2(arg)) {
             this@GeneratedRootFlow.onDeepLink2(it)
         }
+    }
+
+    fun DeepLink2.toBack() {
+        this@GeneratedRootFlow.onBack()
     }
 
     override fun resume(currentState: State) {

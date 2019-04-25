@@ -1,6 +1,7 @@
 package me.jameshunt.flowandroid
 
 import androidx.fragment.app.Fragment
+import me.jameshunt.flow.FlowResult
 import me.jameshunt.flow.Promise
 
 abstract class FlowFragment<Input, Output> : Fragment() {
@@ -9,7 +10,7 @@ abstract class FlowFragment<Input, Output> : Fragment() {
 
     private var arg: Input? = null
 
-    fun flowForResult(arg: Input): Promise<Output> {
+    fun flowForResult(arg: Input): Promise<FlowResult<Output>> {
 
         this.arg = arg
 

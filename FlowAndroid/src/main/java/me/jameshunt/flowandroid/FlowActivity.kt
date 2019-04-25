@@ -3,6 +3,7 @@ package me.jameshunt.flowandroid
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
+import me.jameshunt.flow.FlowManager
 import java.lang.ref.WeakReference
 
 abstract class FlowActivity : AppCompatActivity() {
@@ -27,7 +28,7 @@ abstract class FlowActivity : AppCompatActivity() {
 
     @CallSuper
     override fun onBackPressed() {
-//        FlowManager.delegateBack()
+        FlowManager.delegateBack()
     }
 
     internal fun onFlowFinished() {

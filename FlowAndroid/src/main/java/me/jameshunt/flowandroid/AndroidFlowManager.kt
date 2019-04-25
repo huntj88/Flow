@@ -21,7 +21,7 @@ object AndroidFlowManager {
         this.flowActivity = WeakReference(flowActivity)
 
         when (FlowManager.shouldResume) {
-            true -> this.resumeLeafFlowControllers()
+            true -> this.resumeActiveFlowControllers()
             false -> FlowManager.launchFlow(
                 getInitialFlow = flowActivity::getInitialFlow,
                 args = flowActivity.getInitialArgs(),
@@ -30,7 +30,7 @@ object AndroidFlowManager {
         }
     }
 
-    private fun resumeLeafFlowControllers() {
+    private fun resumeActiveFlowControllers() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
