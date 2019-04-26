@@ -1,8 +1,7 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
 import androidx.fragment.app.Fragment
-import me.jameshunt.flow.FlowResult
-import me.jameshunt.flow.Promise
+import me.jameshunt.flow.promise.Promise
 
 abstract class FlowFragment<Input, Output> : Fragment() {
 

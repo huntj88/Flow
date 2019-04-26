@@ -3,9 +3,9 @@ package me.jameshunt.flow3
 import android.util.Log
 import me.jameshunt.flow.back
 import me.jameshunt.flow.complete
-import me.jameshunt.flowandroid.FragmentFlowController
-import me.jameshunt.flowandroid.ViewId
-import me.jameshunt.flowandroid.proxy
+import me.jameshunt.flow.FragmentFlowController
+import me.jameshunt.flow.ViewId
+import me.jameshunt.flow.proxy
 
 class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId) {
 

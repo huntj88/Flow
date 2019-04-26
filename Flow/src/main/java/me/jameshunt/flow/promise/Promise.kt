@@ -1,6 +1,6 @@
 //package com.inmotionsoftware.promise
 
-package me.jameshunt.flow
+package me.jameshunt.flow.promise
 
 // not actually my code
 
@@ -206,14 +206,22 @@ open class Promise<OUT> {
 
     fun catch(on: Executor?, execute: (Exception) -> Unit): Promise<OUT> {
         val cont =
-            BasicContinuation<OUT, Unit>(executor = on, then = {}, recover = execute)
+            BasicContinuation<OUT, Unit>(
+                executor = on,
+                then = {},
+                recover = execute
+            )
         this.output.add(cont)
         return this
     }
 
     fun always(on: Executor?, execute: () -> Unit ): Promise<OUT> {
         val cont =
-            BasicContinuation<OUT, Unit>(executor = on, then = {}, always = execute)
+            BasicContinuation<OUT, Unit>(
+                executor = on,
+                then = {},
+                always = execute
+            )
         this.output.add(cont)
         return this
     }
@@ -225,31 +233,37 @@ open class Promise<OUT> {
         this.output.add(outer)
         val output = BasicContinuation<T, T>(then = { it })
         val inner =
-            BasicContinuation<Promise<T>, Unit>(then = {
-                it.output.add(output)
-            }, recover = { output.resolve(Status.Rejected(it)) })
+            BasicContinuation<Promise<T>, Unit>(
+                then = {
+                    it.output.add(output)
+                },
+                recover = { output.resolve(Status.Rejected(it)) })
         outer.add(inner)
         return Promise(output)
     }
 
     fun recoverp(on: Executor?, execute: (Exception) -> Promise<OUT>): Promise<OUT> {
-        val outer = BasicContinuation<OUT, Promise<OUT>>(
-            executor = on,
-            then = { Promise(it) },
-            recover = execute
-        )
+        val outer =
+            BasicContinuation<OUT, Promise<OUT>>(
+                executor = on,
+                then = { Promise(it) },
+                recover = execute
+            )
         this.output.add(outer)
         val output = BasicContinuation<OUT, OUT>(then = { it })
         val inner =
-            BasicContinuation<Promise<OUT>, Unit>(then = {
-                it.output.add(output)
-            }, recover = { output.resolve(Status.Rejected(it)) })
+            BasicContinuation<Promise<OUT>, Unit>(
+                then = {
+                    it.output.add(output)
+                },
+                recover = { output.resolve(Status.Rejected(it)) })
         outer.add(inner)
         return Promise(output)
     }
 
     companion object {
-        fun <T> deferred(): DeferredPromise<T> = DeferredPromise()
+        fun <T> deferred(): DeferredPromise<T> =
+            DeferredPromise()
         fun void(): Promise<Unit> = Promise(Unit)
 
         fun <T> join(promises: Iterable<Promise<T>>): Promise<Iterable<T>> {

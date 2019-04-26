@@ -1,4 +1,4 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
 import android.view.LayoutInflater
 import android.widget.FrameLayout

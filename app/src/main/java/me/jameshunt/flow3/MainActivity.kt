@@ -1,8 +1,8 @@
 package me.jameshunt.flow3
 
-import me.jameshunt.flowandroid.FlowActivity
-import me.jameshunt.flowandroid.FragmentFlowController
-import me.jameshunt.flowandroid.FragmentGroupFlowController
+import me.jameshunt.flow.FlowActivity
+import me.jameshunt.flow.FragmentFlowController
+import me.jameshunt.flow.FragmentGroupFlowController
 
 class MainActivity : FlowActivity() {
     override fun getInitialFlow(): FragmentGroupFlowController = FragmentGroupFlowController(R.layout.group_top_bottom)

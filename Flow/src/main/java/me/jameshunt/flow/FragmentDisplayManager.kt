@@ -1,4 +1,4 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
 import androidx.fragment.app.FragmentManager
 

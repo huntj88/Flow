@@ -1,34 +1,19 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
-import me.jameshunt.flow.*
+import me.jameshunt.flow.promise.always
 
 open class FragmentGroupFlowController(internal val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup, Unit>() {
 
     data class FlowsInGroup(val map: Map<ViewId, Class<FragmentFlowController<Unit, Unit>>>)
 
     override fun onStart(state: InitialState<FlowsInGroup>) {
-        AndroidFlowManager.rootViewManager.get()!!.setNewRoot(layoutId)
+        FlowManager.rootViewManager.get()!!.setNewRoot(layoutId)
 
         state.arg.map.forEach { (viewId, flowController) ->
             this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
                 this.onBack()
             }
         }
-    }
-
-    // duplicated from FragmentFlowController
-    private fun <NewInput, NewOutput> flow(
-        controller: Class<FragmentFlowController<NewInput, NewOutput>>,
-        viewId: ViewId,
-        arg: NewInput
-    ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller
-            .getDeclaredConstructor(ViewId::class.java)
-            .newInstance(viewId)
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(arg)
     }
 
     override fun resume(currentState: State) {

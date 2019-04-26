@@ -1,35 +1,17 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
-import me.jameshunt.flow.FlowController
-import me.jameshunt.flow.FlowResult
-import me.jameshunt.flow.Promise
-import me.jameshunt.flow.always
-
-typealias ViewId = Int
+import me.jameshunt.flow.promise.Promise
+import me.jameshunt.flow.promise.always
 
 abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
-    protected fun <NewInput, NewOutput> flow(
-        controller: Class<FragmentFlowController<NewInput, NewOutput>>,
-        viewId: ViewId,
-        arg: NewInput
-    ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller
-            .getDeclaredConstructor(ViewId::class.java)
-            .newInstance(viewId)
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(arg)
-    }
-
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         arg: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        val displayManager = AndroidFlowManager.fragmentDisplayManager.get()
+        val displayManager = FlowManager.fragmentDisplayManager.get()
             ?: throw IllegalStateException("Should never happen")
 
         return displayManager
@@ -40,7 +22,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
     }
 
     override fun onDone(arg: Output) {
-        val displayManager = AndroidFlowManager.fragmentDisplayManager.get()
+        val displayManager = FlowManager.fragmentDisplayManager.get()
             ?: throw IllegalStateException("Should never happen")
 
         displayManager.remove(activeFragment)

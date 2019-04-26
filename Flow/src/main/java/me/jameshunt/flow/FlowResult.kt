@@ -1,5 +1,9 @@
 package me.jameshunt.flow
 
+import me.jameshunt.flow.promise.Promise
+import me.jameshunt.flow.promise.catch
+import me.jameshunt.flow.promise.doAlso
+
 sealed class FlowResult<out Type> {
     data class Completed<Data>(val data: Data) : FlowResult<Data>()
     object Back: FlowResult<Nothing>()

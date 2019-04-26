@@ -1,9 +1,8 @@
-package me.jameshunt.flowandroid
+package me.jameshunt.flow
 
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
-import me.jameshunt.flow.FlowManager
 import java.lang.ref.WeakReference
 
 abstract class FlowActivity : AppCompatActivity() {
@@ -15,10 +14,10 @@ abstract class FlowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_flow)
 
-        AndroidFlowManager.rootViewManager = WeakReference(this.rootViewManager)
-        AndroidFlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
+        FlowManager.rootViewManager = WeakReference(this.rootViewManager)
+        FlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
 
-        AndroidFlowManager.launchFlow(flowActivity = this)
+        FlowManager.launchFlow(flowActivity = this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -28,7 +27,7 @@ abstract class FlowActivity : AppCompatActivity() {
 
     @CallSuper
     override fun onBackPressed() {
-        AndroidFlowManager.delegateBack()
+        FlowManager.delegateBack()
     }
 
     internal fun onFlowFinished() {

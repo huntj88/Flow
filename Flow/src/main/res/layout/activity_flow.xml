@@ -5,4 +5,4 @@
         android:id="@+id/flowRootLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="me.jameshunt.flowandroid.FlowActivity"/>
+        tools:context="me.jameshunt.flow.FlowActivity"/>

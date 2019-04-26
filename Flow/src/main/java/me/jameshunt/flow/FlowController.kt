@@ -1,5 +1,11 @@
 package me.jameshunt.flow
 
+import me.jameshunt.flow.promise.DeferredPromise
+import me.jameshunt.flow.promise.Promise
+import me.jameshunt.flow.promise.always
+
+typealias ViewId = Int
+
 abstract class FlowController<Input, Output> {
 
     interface State
@@ -8,7 +14,8 @@ abstract class FlowController<Input, Output> {
 
     private lateinit var currentState: State
 
-    private val resultPromise: DeferredPromise<FlowResult<Output>> = DeferredPromise()
+    private val resultPromise: DeferredPromise<FlowResult<Output>> =
+        DeferredPromise()
 
     val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
@@ -38,6 +45,22 @@ abstract class FlowController<Input, Output> {
         currentState = InitialState(arg)
         this.onStart(currentState as InitialState<Input>)
         return this.resultPromise.promise
+    }
+
+    protected fun <NewInput, NewOutput> flow(
+        controller: Class<FragmentFlowController<NewInput, NewOutput>>,
+        viewId: ViewId,
+        arg: NewInput
+    ): Promise<FlowResult<NewOutput>> {
+        val flowController = controller
+            .getDeclaredConstructor(ViewId::class.java)
+            .newInstance(viewId)
+
+        childFlows.add(flowController)
+
+        return flowController.launchFlow(arg).always {
+            childFlows.remove(flowController)
+        }
     }
 
     abstract fun handleBack()

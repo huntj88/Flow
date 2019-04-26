@@ -1,5 +1,7 @@
-package me.jameshunt.flow
+package me.jameshunt.flow.promise
 
+import android.os.Handler
+import android.os.Looper
 import java.util.concurrent.*
 
 /**
@@ -11,12 +13,8 @@ enum class PromiseDispatch {
     MAIN, BACKGROUND;
 
     companion object {
-        private lateinit var main: Executor
+        private val main: Executor by lazy { Executor { command -> Handler(Looper.getMainLooper()).post(command) } }
         private val background: Executor by lazy { Executors.newCachedThreadPool() }
-
-        fun setMainExecutor(executor: Executor) {
-            main = executor
-        }
     }
 
     val executor: Executor
