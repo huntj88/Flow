@@ -57,7 +57,12 @@ abstract class GeneratedRootFlow<Input, Output>(viewId: ViewId) : FragmentFlowCo
     }
 
     override fun resume(currentState: State) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        when (currentState) {
+            is InitialState<*> -> this.onStart(currentState as InitialState<Input>)
+            is DeepLink -> this.onDeepLink(currentState)
+            is DeepLink2 -> this.onDeepLink2(currentState)
+            else -> throw IllegalStateException("State is not part of this flow")
+        }
     }
 
 }

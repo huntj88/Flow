@@ -37,17 +37,34 @@ object AndroidFlowManager {
     }
 
     private fun resumeActiveFlowControllers() {
-        rootViewManager.get()!!.setNewRoot(getGroupLayout())
-    }
+        fragmentDisplayManager.get()!!.removeAll()
 
-    private fun getGroupLayout(): LayoutId = (flowManager._rootFlow!! as FragmentGroupFlowController)
-        .findGroup()
-        .layoutId
+        val flowGroup = (flowManager._rootFlow!! as FragmentGroupFlowController)
+            .findGroup()
+
+        rootViewManager.get()!!.setNewRoot(flowGroup.layoutId)
+
+        flowGroup
+            .childFlows
+            .map { it as FragmentFlowController<*,*> }
+            .map { it.getFragmentFlowLeaf() }
+            .forEach { it.resume() }
+    }
 
     private fun FragmentGroupFlowController.findGroup(): FragmentGroupFlowController = this.childFlows
         .mapNotNull { it as? FragmentGroupFlowController }
         .firstOrNull()
         ?.findGroup()
         ?: this
+
+    //find group must be called before this
+    private fun FragmentFlowController<*,*>.getFragmentFlowLeaf(): FragmentFlowController<*,*> {
+        return when(this.childFlows.isEmpty()) {
+            true -> this
+
+            // fragmentFlowControllers will only ever have one child
+            false -> (childFlows.first() as FragmentFlowController<*, *>).getFragmentFlowLeaf()
+        }
+    }
 
 }

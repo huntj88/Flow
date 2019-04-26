@@ -12,6 +12,8 @@ abstract class FlowController<Input, Output> {
 
     val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
+    fun resume() = resume(currentState)
+
     protected abstract fun resume(currentState: State)
 
     protected abstract fun onStart(state: InitialState<Input>)
@@ -25,7 +27,7 @@ abstract class FlowController<Input, Output> {
     }
 
     protected fun <T : State> State.transition(to: T, transition: (T) -> Unit) {
-        if(currentState != this) throw IllegalStateException("already transitioned, current state is $this")
+        if (currentState != this) throw IllegalStateException("already transitioned, current state is $currentState, from: $this, to: $to")
 
         currentState = to
         transition(to)

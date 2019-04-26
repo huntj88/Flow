@@ -9,8 +9,9 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
     ): FragmentType {
         (fragmentManager.findFragmentById(viewId) as? FlowFragment<*,*>)?.proxy?.saveState()
 
-        val fragment = fragmentProxy.clazz.newInstance()
-            .also { fragmentProxy.bind(it) }
+        val fragment = fragmentProxy.fragment?.get() ?: fragmentProxy.clazz.newInstance()
+
+        fragmentProxy.bind(fragment)
 
         fragmentManager.beginTransaction().replace(viewId, fragment, fragmentProxy.tag).commit()
         return fragment
@@ -31,6 +32,6 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
             fragmentManager.fragments.forEach {
                 transaction.remove(it)
             }
-        }.commit()
+        }.commitNow()
     }
 }

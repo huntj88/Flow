@@ -15,8 +15,6 @@ abstract class FlowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_flow)
 
-        fragmentDisplayManager.removeAll()
-
         AndroidFlowManager.rootViewManager = WeakReference(this.rootViewManager)
         AndroidFlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
 

@@ -13,7 +13,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
     internal val clazz: Class<FragmentType>
 ) {
 
-    internal lateinit var fragment: WeakReference<FragmentType>
+    internal var fragment: WeakReference<FragmentType>? = null
 
     private var state: Fragment.SavedState? = null
 
@@ -30,7 +30,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
     }
 
     internal fun saveState() {
-        this.fragment.get()?.let {
+        this.fragment?.get()?.let {
             // We can't save the state of a Fragment that isn't added to a FragmentManager.
             if (it.isAdded) {
                 this.state = it.fragmentManager?.saveFragmentInstanceState(it)
