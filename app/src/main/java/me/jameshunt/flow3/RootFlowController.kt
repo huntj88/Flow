@@ -38,9 +38,11 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId)
             Unit
         )
 
-        this.flowGroup(controller = ViewPagerGroupController::class.java, arg = groupArgs).back {
-            state.toBack()
-        }
+        this.flowGroup(controller = ViewPagerGroupController::class.java, arg = groupArgs)
+            .back { state.toBack() }
+
+//        this.flow(controller = RootFlowController::class.java, viewId = R.id.groupSimple,arg = Unit)
+//            .back { state.toBack() }
     }
 }
 

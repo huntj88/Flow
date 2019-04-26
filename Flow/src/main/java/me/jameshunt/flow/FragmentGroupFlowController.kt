@@ -37,4 +37,4 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     }
 }
 
-inline fun <reified T: FragmentFlowController<Unit, Unit>> ViewId.toPair(controllerClass: Class<T>): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(this, controllerClass as Class<FragmentFlowController<Unit, Unit>>)
+fun < T: FragmentFlowController<Unit, Unit>> ViewId.toPair(controllerClass: Class<T>): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(this, controllerClass as Class<FragmentFlowController<Unit, Unit>>)

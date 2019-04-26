@@ -2,7 +2,6 @@ package me.jameshunt.flow
 
 import me.jameshunt.flow.promise.DeferredPromise
 import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.always
 
 typealias ViewId = Int
 
@@ -17,7 +16,7 @@ abstract class FlowController<Input, Output> {
     private val resultPromise: DeferredPromise<FlowResult<Output>> =
         DeferredPromise()
 
-    val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
+    internal val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
     fun resume() = resume(currentState)
 
@@ -45,23 +44,6 @@ abstract class FlowController<Input, Output> {
         currentState = InitialState(arg)
         this.onStart(currentState as InitialState<Input>)
         return this.resultPromise.promise
-    }
-
-    //todo: see if this can be moved to fragmentFlowController flow delegation or something
-    protected open fun <NewInput, NewOutput> flow(
-        controller: Class<FragmentFlowController<NewInput, NewOutput>>,
-        viewId: ViewId,
-        arg: NewInput
-    ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller
-            .getDeclaredConstructor(ViewId::class.java)
-            .newInstance(viewId)
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(arg).always {
-            childFlows.remove(flowController)
-        }
     }
 
     abstract fun handleBack()

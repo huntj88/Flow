@@ -21,8 +21,8 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
             .always { this.activeFragment = null }
     }
 
-    inline fun <GroupInput, reified ControllerClass: FragmentGroupFlowController<GroupInput>> flowGroup(
-        controller: Class<ControllerClass>,
+    fun <GroupInput, Controller: FragmentGroupFlowController<GroupInput>> flowGroup(
+        controller: Class<Controller>,
         arg: FragmentGroupFlowController.FlowsInGroup<GroupInput>
     ): Promise<FlowResult<Unit>> {
 
@@ -51,5 +51,21 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
     override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
+    }
+}
+
+fun <NewInput, NewOutput, Controller: FragmentFlowController<NewInput, NewOutput>> FlowController<*,*>.flow(
+    controller: Class<Controller>,
+    viewId: ViewId,
+    arg: NewInput
+): Promise<FlowResult<NewOutput>> {
+    val flowController = controller
+        .getDeclaredConstructor(ViewId::class.java)
+        .newInstance(viewId)
+
+    childFlows.add(flowController)
+
+    return flowController.launchFlow(arg).always {
+        childFlows.remove(flowController)
     }
 }
