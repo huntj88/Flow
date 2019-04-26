@@ -1,6 +1,7 @@
 package me.jameshunt.flow
 
 import android.view.ViewGroup
+import me.jameshunt.flow.promise.always
 
 abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup<T>, Unit>() {
 
@@ -12,9 +13,17 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     override fun onStart(state: InitialState<FlowsInGroup<T>>) {
         val layout = FlowManager.rootViewManager.get()!!.setNewRoot(layoutId)
         setupGroup(layout, state.arg)
+
+        if(childFlows.isEmpty()) {
+            state.arg.map.forEach { (viewId, flowController) ->
+                this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
+                    this.onBack()
+                }
+            }
+        }
     }
 
-    abstract fun setupGroup(layout: ViewGroup, flowsInGroup: FlowsInGroup<T>)
+    open fun setupGroup(layout: ViewGroup, flowsInGroup: FlowsInGroup<T>) {}
 
     protected open fun childIndexToDelegateBack(): Int = 0
 
@@ -27,3 +36,5 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
         this.onStart(currentState as InitialState<FlowsInGroup<T>>)
     }
 }
+
+inline fun <reified T: FragmentFlowController<Unit, Unit>> ViewId.toPair(controllerClass: Class<T>): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(this, controllerClass as Class<FragmentFlowController<Unit, Unit>>)

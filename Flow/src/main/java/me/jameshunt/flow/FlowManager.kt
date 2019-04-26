@@ -14,7 +14,7 @@ object FlowManager {
 
     private lateinit var flowActivity: WeakReference<FlowActivity<*>>
     internal lateinit var rootViewManager: WeakReference<RootViewManager>
-    internal lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
+    lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
 
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.flowActivity = WeakReference(flowActivity)
@@ -45,6 +45,8 @@ object FlowManager {
 
         rootViewManager.get()!!.setNewRoot(flowGroup.layoutId)
 
+        flowGroup.resume()
+
         flowGroup
             .childFlows
             .map { it as FragmentFlowController<*, *> }
@@ -52,11 +54,29 @@ object FlowManager {
             .forEach { it.resume() }
     }
 
-    private fun FragmentGroupFlowController<*>.findGroup(): FragmentGroupFlowController<*> = this.childFlows
-        .mapNotNull { it as? FragmentGroupFlowController<*> }
-        .firstOrNull()
-        ?.findGroup()
-        ?: this
+    private fun FragmentGroupFlowController<*>.findGroup(): FragmentGroupFlowController<*> {
+        return this.childFlows
+            .mapNotNull { it as? FragmentGroupFlowController<*> }
+            .firstOrNull()
+            ?.findGroup()
+
+            ?: this.childFlows
+                .mapNotNull { it.findGroup() }
+                .firstOrNull()
+
+            ?: this
+    }
+
+    private fun FlowController<*,*>.findGroup(): FragmentGroupFlowController<*>? {
+        return this.childFlows
+            .mapNotNull { it as? FragmentGroupFlowController<*> }
+            .firstOrNull()
+            ?.findGroup()
+
+            ?: this.childFlows
+                .firstOrNull()
+                ?.findGroup()
+    }
 
     //find group must be called before this
     private fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *> {

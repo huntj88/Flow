@@ -29,14 +29,16 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId)
 //            .complete { Log.d("root", "fragment resolved") }
 //            .back { state.toBack() }
 
-        this.flowGroup(controller = ViewPagerGroupController::class.java as Class<FragmentGroupFlowController<Unit>>, arg = FragmentGroupFlowController.FlowsInGroup(
+        val groupArgs = FragmentGroupFlowController.FlowsInGroup(
             mapOf(
-                R.id.groupPagerZero to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>,
-                R.id.groupPagerOne to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>,
-                R.id.groupPagerTwo to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>
+                R.id.groupPagerZero.toPair(RootFlowController::class.java),
+                R.id.groupPagerOne.toPair(RootFlowController::class.java),
+                R.id.groupPagerTwo.toPair(RootFlowController::class.java)
             ),
             Unit
-        )).back {
+        )
+
+        this.flowGroup(controller = ViewPagerGroupController::class.java, arg = groupArgs).back {
             state.toBack()
         }
     }

@@ -51,11 +51,5 @@ class ViewPagerGroupController: FragmentGroupFlowController<Unit>(R.layout.group
                 backIndex = position
             }
         })
-
-        flowsInGroup.map.forEach { (viewId, flowController) ->
-            this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
-                this.onBack()
-            }
-        }
     }
 }

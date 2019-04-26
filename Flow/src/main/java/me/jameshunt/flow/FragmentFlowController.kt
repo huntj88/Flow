@@ -21,8 +21,8 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
             .always { this.activeFragment = null }
     }
 
-    fun <GroupInput> flowGroup(
-        controller: Class<FragmentGroupFlowController<GroupInput>>,
+    inline fun <GroupInput, reified ControllerClass: FragmentGroupFlowController<GroupInput>> flowGroup(
+        controller: Class<ControllerClass>,
         arg: FragmentGroupFlowController.FlowsInGroup<GroupInput>
     ): Promise<FlowResult<Unit>> {
 
