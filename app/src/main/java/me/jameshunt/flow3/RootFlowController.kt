@@ -1,16 +1,12 @@
 package me.jameshunt.flow3
 
 import android.util.Log
-import me.jameshunt.flow.back
-import me.jameshunt.flow.complete
-import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.ViewId
-import me.jameshunt.flow.proxy
+import me.jameshunt.flow.*
 
 class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId) {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
-    private val testFragmentProxy2 = proxy(TestFragment::class.java)
+//    private val testFragmentProxy2 = proxy(TestFragment::class.java)
 
     override fun onStart(state: InitialState<Unit>) {
         Log.d("root", "start")
@@ -19,16 +15,30 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId)
 
     override fun onDeepLink(state: DeepLink) {
         Log.d("root", state.arg)
-        this.flow(fragmentProxy = testFragmentProxy, arg = state.arg).complete {
-            state.toDeepLink2("wooow")
-        }
+        this.flow(fragmentProxy = testFragmentProxy, arg = state.arg)
+            .complete { state.toDeepLink2("wooow") }
+            .back {
+                Log.d("root", "back")
+                state.toBack()
+            }
     }
 
     override fun onDeepLink2(state: DeepLink2) {
-        Log.d("root", state.arg)
-        this.flow(fragmentProxy = testFragmentProxy2, arg = state.arg)
-            .complete { Log.d("root", "fragment resolved") }
-            .back { state.toBack() }
+//        Log.d("root", state.arg)
+//        this.flow(fragmentProxy = testFragmentProxy2, arg = state.arg)
+//            .complete { Log.d("root", "fragment resolved") }
+//            .back { state.toBack() }
+
+        this.flowGroup(controller = ViewPagerGroupController::class.java as Class<FragmentGroupFlowController<Unit>>, arg = FragmentGroupFlowController.FlowsInGroup(
+            mapOf(
+                R.id.groupPagerZero to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>,
+                R.id.groupPagerOne to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>,
+                R.id.groupPagerTwo to RootFlowController::class.java as Class<FragmentFlowController<Unit, Unit>>
+            ),
+            Unit
+        )).back {
+            state.toBack()
+        }
     }
 }
 
@@ -50,6 +60,10 @@ abstract class GeneratedRootFlow<Input, Output>(viewId: ViewId) : FragmentFlowCo
         this.transition(to = DeepLink2(arg)) {
             this@GeneratedRootFlow.onDeepLink2(it)
         }
+    }
+
+    fun DeepLink.toBack() {
+        this@GeneratedRootFlow.onBack()
     }
 
     fun DeepLink2.toBack() {

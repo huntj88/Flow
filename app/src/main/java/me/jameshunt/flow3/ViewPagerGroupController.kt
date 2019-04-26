@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import me.jameshunt.flow.FragmentGroupFlowController
+import me.jameshunt.flow.promise.always
 
 class ViewPagerGroupController: FragmentGroupFlowController<Unit>(R.layout.group_view_pager) {
 
@@ -20,12 +21,14 @@ class ViewPagerGroupController: FragmentGroupFlowController<Unit>(R.layout.group
 
         val pages = (0 until flowsInGroup.map.size).map { index ->
             when(index) {
-                0 -> inflater.inflate(R.layout.group_view_pager_zero, layout)
-                1 -> inflater.inflate(R.layout.group_view_pager_one, layout)
-                2 -> inflater.inflate(R.layout.group_view_pager_two, layout)
+                0 -> inflater.inflate(R.layout.group_view_pager_zero, layout, false)
+                1 -> inflater.inflate(R.layout.group_view_pager_one, layout, false)
+                2 -> inflater.inflate(R.layout.group_view_pager_two, layout, false)
                 else -> throw NotImplementedError()
-            }
+            }.also { layout.addView(it) }
         }
+
+        layout.offscreenPageLimit = pages.size - 1
 
         layout.adapter = object: PagerAdapter() {
             override fun instantiateItem(collection: ViewGroup, position: Int): Any = pages[position]
@@ -48,5 +51,11 @@ class ViewPagerGroupController: FragmentGroupFlowController<Unit>(R.layout.group
                 backIndex = position
             }
         })
+
+        flowsInGroup.map.forEach { (viewId, flowController) ->
+            this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
+                this.onBack()
+            }
+        }
     }
 }

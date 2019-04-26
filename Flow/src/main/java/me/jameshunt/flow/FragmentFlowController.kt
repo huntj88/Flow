@@ -21,18 +21,23 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
             .always { this.activeFragment = null }
     }
 
-    override fun <NewInput, NewOutput> flow(
-        controller: Class<FragmentFlowController<NewInput, NewOutput>>,
-        viewId: ViewId,
-        arg: NewInput
-    ): Promise<FlowResult<NewOutput>> {
+    fun <GroupInput> flowGroup(
+        controller: Class<FragmentGroupFlowController<GroupInput>>,
+        arg: FragmentGroupFlowController.FlowsInGroup<GroupInput>
+    ): Promise<FlowResult<Unit>> {
 
         // remove all the fragments from this flowController before starting the next FlowController
         // (state will still be saved when they get back)
         // The fragments parent views could potentially no longer exist
         FlowManager.fragmentDisplayManager.get()!!.removeAll()
 
-        return super.flow(controller, viewId, arg)
+        val flowController = controller.newInstance()
+
+        childFlows.add(flowController)
+
+        return flowController.launchFlow(arg).always {
+            childFlows.remove(flowController)
+        }
     }
 
     override fun onDone(arg: Output) {
@@ -45,6 +50,6 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
     override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
-        this.activeFragment?.onBack()
+        this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
     }
 }

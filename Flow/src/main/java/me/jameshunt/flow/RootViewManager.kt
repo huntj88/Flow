@@ -11,6 +11,9 @@ class RootViewManager(private val activity: FlowActivity<*>) {
     fun setNewRoot(layoutId: LayoutId): ViewGroup {
         val flowRootLayout = activity.findViewById<FrameLayout>(R.id.flowRootLayout)
         flowRootLayout.removeAllViews()
-        return LayoutInflater.from(activity).inflate(layoutId, flowRootLayout) as ViewGroup
+
+        val layout = LayoutInflater.from(activity).inflate(layoutId, flowRootLayout, false) as ViewGroup
+        flowRootLayout.addView(layout)
+        return layout
     }
 }

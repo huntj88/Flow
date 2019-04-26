@@ -47,6 +47,7 @@ abstract class FlowController<Input, Output> {
         return this.resultPromise.promise
     }
 
+    //todo: see if this can be moved to fragmentFlowController flow delegation or something
     protected open fun <NewInput, NewOutput> flow(
         controller: Class<FragmentFlowController<NewInput, NewOutput>>,
         viewId: ViewId,
