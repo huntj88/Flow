@@ -47,7 +47,7 @@ abstract class FlowController<Input, Output> {
         return this.resultPromise.promise
     }
 
-    protected fun <NewInput, NewOutput> flow(
+    protected open fun <NewInput, NewOutput> flow(
         controller: Class<FragmentFlowController<NewInput, NewOutput>>,
         viewId: ViewId,
         arg: NewInput

@@ -7,7 +7,7 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> show(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>, viewId: ViewId
     ): FragmentType {
-        (fragmentManager.findFragmentById(viewId) as? FlowFragment<*,*>)?.proxy?.saveState()
+        (fragmentManager.findFragmentById(viewId) as? FlowFragment<*, *>)?.proxy?.saveState()
 
         val fragment = fragmentProxy.fragment?.get() ?: fragmentProxy.clazz.newInstance()
 
@@ -19,7 +19,7 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
 
     fun saveAll() {
         fragmentManager.fragments.forEach {
-            (it as FlowFragment<*,*>).proxy.saveState()
+            (it as FlowFragment<*, *>).proxy.saveState()
         }
     }
 
@@ -27,11 +27,18 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
         fragmentManager.beginTransaction().remove(activeFragment?.fragment?.get()!!).commit()
     }
 
-    fun removeAll() {
-        fragmentManager.beginTransaction().also { transaction ->
-            fragmentManager.fragments.forEach {
-                transaction.remove(it)
+    fun removeAll(blocking: Boolean = false) {
+        fragmentManager.beginTransaction()
+            .also { transaction ->
+                fragmentManager.fragments.forEach {
+                    transaction.remove(it)
+                }
             }
-        }.commitNow()
+            .let {
+                when (blocking) {
+                    true -> it.commitNow()
+                    false -> it.commit()
+                }
+            }
     }
 }
