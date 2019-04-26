@@ -15,6 +15,8 @@ abstract class FlowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_flow)
 
+        fragmentDisplayManager.removeAll()
+
         AndroidFlowManager.rootViewManager = WeakReference(this.rootViewManager)
         AndroidFlowManager.fragmentDisplayManager = WeakReference(this.fragmentDisplayManager)
 
@@ -22,13 +24,13 @@ abstract class FlowActivity : AppCompatActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-//        this.fragmentDisplayManager.onSave()
+        this.fragmentDisplayManager.saveAll()
         super.onSaveInstanceState(outState)
     }
 
     @CallSuper
     override fun onBackPressed() {
-        FlowManager.delegateBack()
+        AndroidFlowManager.delegateBack()
     }
 
     internal fun onFlowFinished() {

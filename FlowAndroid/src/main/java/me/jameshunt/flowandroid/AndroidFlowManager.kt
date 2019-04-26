@@ -13,6 +13,8 @@ object AndroidFlowManager {
         PromiseDispatch.setMainExecutor(executor)
     }
 
+    private val flowManager = FlowManager()
+
     private lateinit var flowActivity: WeakReference<FlowActivity>
     internal lateinit var rootViewManager: WeakReference<RootViewManager>
     internal lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
@@ -20,9 +22,9 @@ object AndroidFlowManager {
     fun launchFlow(flowActivity: FlowActivity) {
         this.flowActivity = WeakReference(flowActivity)
 
-        when (FlowManager.shouldResume) {
+        when (flowManager.shouldResume) {
             true -> this.resumeActiveFlowControllers()
-            false -> FlowManager.launchFlow(
+            false -> flowManager.launchFlow(
                 getInitialFlow = flowActivity::getInitialFlow,
                 args = flowActivity.getInitialArgs(),
                 onFlowFinished = { this.flowActivity.get()!!.onFlowFinished() }
@@ -30,8 +32,22 @@ object AndroidFlowManager {
         }
     }
 
-    private fun resumeActiveFlowControllers() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    fun delegateBack() {
+        flowManager.delegateBack()
     }
+
+    private fun resumeActiveFlowControllers() {
+        rootViewManager.get()!!.setNewRoot(getGroupLayout())
+    }
+
+    private fun getGroupLayout(): LayoutId = (flowManager._rootFlow!! as FragmentGroupFlowController)
+        .findGroup()
+        .layoutId
+
+    private fun FragmentGroupFlowController.findGroup(): FragmentGroupFlowController = this.childFlows
+        .mapNotNull { it as? FragmentGroupFlowController }
+        .firstOrNull()
+        ?.findGroup()
+        ?: this
 
 }

@@ -1,8 +1,8 @@
 package me.jameshunt.flow
 
-object FlowManager {
+class FlowManager {
 
-    private var _rootFlow: FlowController<*, Unit>? = null
+    var _rootFlow: FlowController<*, Unit>? = null
 
     val shouldResume: Boolean
         get() = this._rootFlow != null

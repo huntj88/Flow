@@ -2,7 +2,7 @@ package me.jameshunt.flowandroid
 
 import me.jameshunt.flow.*
 
-open class FragmentGroupFlowController(private val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup, Unit>() {
+open class FragmentGroupFlowController(internal val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup, Unit>() {
 
     data class FlowsInGroup(val map: Map<ViewId, Class<FragmentFlowController<Unit, Unit>>>)
 

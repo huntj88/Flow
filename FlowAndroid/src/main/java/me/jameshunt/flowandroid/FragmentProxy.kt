@@ -6,6 +6,9 @@ import me.jameshunt.flow.FlowResult
 import java.lang.ref.WeakReference
 import java.util.*
 
+fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> FragmentFlowController<*, *>
+        .proxy(clazz: Class<FragmentType>): FragmentProxy<FragInput, FragOutput, FragmentType> = FragmentProxy(clazz)
+
 class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>>(
     internal val clazz: Class<FragmentType>
 ) {

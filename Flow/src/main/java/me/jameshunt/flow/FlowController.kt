@@ -10,7 +10,7 @@ abstract class FlowController<Input, Output> {
 
     private val resultPromise: DeferredPromise<FlowResult<Output>> = DeferredPromise()
 
-    protected val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
+    val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
     protected abstract fun resume(currentState: State)
 

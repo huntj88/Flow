@@ -4,13 +4,13 @@ import android.util.Log
 import me.jameshunt.flow.back
 import me.jameshunt.flow.complete
 import me.jameshunt.flowandroid.FragmentFlowController
-import me.jameshunt.flowandroid.FragmentProxy
 import me.jameshunt.flowandroid.ViewId
+import me.jameshunt.flowandroid.proxy
 
 class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId) {
 
-    private val testFragmentProxy = FragmentProxy(TestFragment::class.java)
-    private val testFragmentProxy2 = FragmentProxy(TestFragment::class.java)
+    private val testFragmentProxy = proxy(TestFragment::class.java)
+    private val testFragmentProxy2 = proxy(TestFragment::class.java)
 
     override fun onStart(state: InitialState<Unit>) {
         Log.d("root", "start")
