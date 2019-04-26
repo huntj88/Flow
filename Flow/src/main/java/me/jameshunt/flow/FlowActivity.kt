@@ -5,7 +5,7 @@ import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 import java.lang.ref.WeakReference
 
-abstract class FlowActivity : AppCompatActivity() {
+abstract class FlowActivity<RootFlowController: FragmentFlowController<Unit, Unit>> : AppCompatActivity() {
 
     private val rootViewManager: RootViewManager by lazy { RootViewManager(this) }
     private val fragmentDisplayManager = FragmentDisplayManager(this.supportFragmentManager)
@@ -34,6 +34,11 @@ abstract class FlowActivity : AppCompatActivity() {
         super.onBackPressed()
     }
 
-    abstract fun getInitialFlow(): FragmentGroupFlowController
-    abstract fun getInitialArgs(): FragmentGroupFlowController.FlowsInGroup
+    abstract fun getInitialFlow(): Class<RootFlowController>
+
+    fun getInitialGroupFlow(): SimpleGroupController = SimpleGroupController()
+    fun getInitialArgs(): FragmentGroupFlowController.FlowsInGroup<Unit> = FragmentGroupFlowController.FlowsInGroup(
+        map = mapOf(R.id.groupSimple to getInitialFlow() as Class<FragmentFlowController<Unit, Unit>>),
+        extra = Unit
+    )
 }

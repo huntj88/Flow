@@ -12,16 +12,16 @@ object FlowManager {
         get() = this.rootFlow != null
 
 
-    private lateinit var flowActivity: WeakReference<FlowActivity>
+    private lateinit var flowActivity: WeakReference<FlowActivity<*>>
     internal lateinit var rootViewManager: WeakReference<RootViewManager>
     internal lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
 
-    fun launchFlow(flowActivity: FlowActivity) {
+    fun launchFlow(flowActivity: FlowActivity<*>) {
         this.flowActivity = WeakReference(flowActivity)
 
         when (shouldResume) {
             true -> this.resumeActiveFlowControllers()
-            false -> this.rootFlow = flowActivity.getInitialFlow().also { rootFlow ->
+            false -> this.rootFlow = flowActivity.getInitialGroupFlow().also { rootFlow ->
                 rootFlow
                     .launchFlow(flowActivity.getInitialArgs())
                     .catch { it.printStackTrace() }
@@ -41,7 +41,7 @@ object FlowManager {
     private fun resumeActiveFlowControllers() {
         fragmentDisplayManager.get()!!.removeAll()
 
-        val flowGroup = (rootFlow!! as FragmentGroupFlowController).findGroup()
+        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*>).findGroup()
 
         rootViewManager.get()!!.setNewRoot(flowGroup.layoutId)
 
@@ -52,8 +52,8 @@ object FlowManager {
             .forEach { it.resume() }
     }
 
-    private fun FragmentGroupFlowController.findGroup(): FragmentGroupFlowController = this.childFlows
-        .mapNotNull { it as? FragmentGroupFlowController }
+    private fun FragmentGroupFlowController<*>.findGroup(): FragmentGroupFlowController<*> = this.childFlows
+        .mapNotNull { it as? FragmentGroupFlowController<*> }
         .firstOrNull()
         ?.findGroup()
         ?: this

@@ -1,15 +1,16 @@
 package me.jameshunt.flow
 
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.FrameLayout
 
 typealias LayoutId = Int
 
-class RootViewManager(private val activity: FlowActivity) {
+class RootViewManager(private val activity: FlowActivity<*>) {
 
-    fun setNewRoot(layoutId: LayoutId) {
+    fun setNewRoot(layoutId: LayoutId): ViewGroup {
         val flowRootLayout = activity.findViewById<FrameLayout>(R.id.flowRootLayout)
         flowRootLayout.removeAllViews()
-        LayoutInflater.from(activity).inflate(layoutId, flowRootLayout)
+        return LayoutInflater.from(activity).inflate(layoutId, flowRootLayout) as ViewGroup
     }
 }
