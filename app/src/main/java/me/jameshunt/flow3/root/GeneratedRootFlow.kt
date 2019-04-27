@@ -7,7 +7,7 @@ import me.jameshunt.flow.promise.then
 
 abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, Unit>(viewId) {
 
-    sealed class RootFlowState: State {
+    protected sealed class RootFlowState: State {
         interface FromOne // can go from One to whichever states implemented this
         interface FromTwo
         interface FromThree
@@ -21,12 +21,12 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         data class Four(val arg: String) : RootFlowState(), FromOne, FromTwo
     }
 
-    abstract fun onOne(state: RootFlowState.One): Promise<RootFlowState.FromOne>
-    abstract fun onTwo(state: RootFlowState.Two): Promise<RootFlowState.FromTwo>
-    abstract fun onThree(state: RootFlowState.Three): Promise<RootFlowState.FromThree>
-    abstract fun onFour(state: RootFlowState.Four): Promise<RootFlowState.FromFour>
+    protected abstract fun onOne(state: RootFlowState.One): Promise<RootFlowState.FromOne>
+    protected abstract fun onTwo(state: RootFlowState.Two): Promise<RootFlowState.FromTwo>
+    protected abstract fun onThree(state: RootFlowState.Three): Promise<RootFlowState.FromThree>
+    protected abstract fun onFour(state: RootFlowState.Four): Promise<RootFlowState.FromFour>
 
-    override fun onStart(state: InitialState<Unit>) {
+    final override fun onStart(state: InitialState<Unit>) {
         toOne(RootFlowState.One)
     }
 

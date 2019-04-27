@@ -4,6 +4,10 @@ import me.jameshunt.flow.promise.*
 
 abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
 
+    interface DoneState<Output> {
+        val output: Output
+    }
+
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
@@ -52,7 +56,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         }
     }
 
-    override fun onDone(output: Output) {
+    fun DoneState<Output>.onDone() {
         FlowManager.fragmentDisplayManager.remove(activeFragment)
         super.onDone(output)
     }

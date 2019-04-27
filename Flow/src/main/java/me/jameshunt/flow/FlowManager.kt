@@ -4,7 +4,7 @@ import me.jameshunt.flow.promise.always
 import me.jameshunt.flow.promise.catch
 import java.lang.ref.WeakReference
 
-object FlowManager {
+internal object FlowManager {
     private var rootFlow: FlowController<*, Unit>? = null
 
     private lateinit var transientActivity: WeakReference<FlowActivity<*>>

@@ -31,7 +31,7 @@ abstract class FlowController<Input, Output> {
         this@FlowController.resultPromise.resolve(FlowResult.Back)
     }
 
-    protected open fun onDone(output: Output) {
+    internal fun onDone(output: Output) {
         this.resultPromise.resolve(FlowResult.Completed(output))
     }
 

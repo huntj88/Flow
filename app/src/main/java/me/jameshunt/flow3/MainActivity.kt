@@ -1,8 +1,8 @@
 package me.jameshunt.flow3
 
 import me.jameshunt.flow.FlowActivity
-import me.jameshunt.flow3.root.RootFlowController
+import me.jameshunt.flow3.splash.SplashFlowController
 
-class MainActivity : FlowActivity<RootFlowController>() {
-    override fun getInitialFlow(): Class<RootFlowController> = RootFlowController::class.java
+class MainActivity : FlowActivity<SplashFlowController>() {
+    override fun getInitialFlow(): Class<SplashFlowController> = SplashFlowController::class.java
 }
