@@ -31,9 +31,9 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId)
 
         val groupArgs = FragmentGroupFlowController.FlowsInGroup(
             mapOf(
-                R.id.groupPagerZero.toPair(RootFlowController::class.java),
-                R.id.groupPagerOne.toPair(RootFlowController::class.java),
-                R.id.groupPagerTwo.toPair(RootFlowController::class.java)
+                RootFlowController::class.java.putInView(R.id.groupPagerZero),
+                RootFlowController::class.java.putInView(R.id.groupPagerOne),
+                RootFlowController::class.java.putInView(R.id.groupPagerTwo)
             ),
             Unit
         )
