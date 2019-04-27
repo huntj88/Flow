@@ -7,11 +7,12 @@ import me.jameshunt.flow.promise.always
 abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup<T>, Unit>() {
 
     data class FlowsInGroup<T>(
-        val map: Map<ViewId, Class<FragmentFlowController<Unit, Unit>>>,
+        val map: Map<ViewId, Class<FragmentFlowController<*, *>>>,
         val extra: T
     )
 
-    object Back: BackState
+    object Back: BackState, State
+    data class Done(override val output: Unit): FragmentFlowController.DoneState<Unit>, State
 
     final override fun onStart(state: InitialState<FlowsInGroup<T>>) {
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
@@ -19,9 +20,22 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
         if(childFlows.isEmpty()) {
             state.input.map.forEach { (viewId, flowController) ->
-                this.flow(controller = flowController, viewId = viewId, input = Unit).always {
-                    Back.onBack()
-                }
+
+                when(this is DeepLinkGroupController){
+                    true -> this.flow(
+                        controller = flowController as Class<FragmentFlowController<DeepLinkData, Unit>>,
+                        viewId = viewId,
+                        input = this.deepLinkData
+                    )
+                    false -> this.flow(
+                        controller = flowController as Class<FragmentFlowController<Unit, Unit>>,
+                        viewId = viewId,
+                        input = Unit
+                    )
+                }.forResult<Unit, State>(
+                    onBack = { Promise(Back) },
+                    onComplete = { Promise(Done(Unit)) }
+                )
             }
         }
     }
@@ -52,9 +66,8 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     }
 
     final override fun resume(currentState: State) {
-        FlowManager.rootViewManager.setNewRoot(layoutId)
         this.onStart(currentState as InitialState<FlowsInGroup<T>>)
     }
 }
 
-fun <T: FragmentFlowController<Unit, Unit>> Class<T>.putInView(viewId: ViewId): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(viewId, this as Class<FragmentFlowController<Unit, Unit>>)
+fun <T: FragmentFlowController<Unit, Unit>> Class<T>.putInView(viewId: ViewId): Pair<ViewId, Class<FragmentFlowController<*,*>>> = Pair(viewId, this as Class<FragmentFlowController<*, *>>)

@@ -1,10 +1,13 @@
 package me.jameshunt.flow
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 
-abstract class FlowActivity<RootFlowController: FragmentFlowController<Unit, Unit>> : AppCompatActivity() {
+data class DeepLinkData(val intent: Intent?)
+
+abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkData, Unit>> : AppCompatActivity() {
 
     internal val rootViewManager: RootViewManager by lazy { RootViewManager(this) }
     internal val fragmentDisplayManager = FragmentDisplayManager(this.supportFragmentManager)
@@ -32,9 +35,9 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<Unit, Uni
 
     abstract fun getInitialFlow(): Class<RootFlowController>
 
-    fun getInitialGroupFlow(): SimpleGroupController = SimpleGroupController()
+    fun getInitialGroupFlow(): DeepLinkGroupController = DeepLinkGroupController(DeepLinkData(this.intent))
     fun getInitialArgs(): FragmentGroupFlowController.FlowsInGroup<Unit> = FragmentGroupFlowController.FlowsInGroup(
-        map = mapOf(R.id.groupSimple to getInitialFlow() as Class<FragmentFlowController<Unit, Unit>>),
+        map = mapOf(R.id.groupSimple to getInitialFlow() as Class<FragmentFlowController<*, *>>),
         extra = Unit
     )
 }
