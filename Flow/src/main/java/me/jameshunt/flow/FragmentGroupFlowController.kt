@@ -5,7 +5,7 @@ import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.always
 import me.jameshunt.flow.promise.then
 
-abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId) :
+abstract class FragmentGroupFlowController<T>(private val layoutId: LayoutId) :
     FlowController<FragmentGroupFlowController.GroupFlows, Unit>() {
 
     interface GroupFlows
@@ -21,8 +21,8 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId) :
         val extra: T
     ) : GroupFlows
 
-    object Back : BackState, State
-    data class Done(override val output: Unit) : FragmentFlowController.DoneState<Unit>, State
+    internal object Back : BackState, State
+    internal data class Done(override val output: Unit) : FragmentFlowController.DoneState<Unit>, State
 
     final override fun onStart(state: InitialState<GroupFlows>) {
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)

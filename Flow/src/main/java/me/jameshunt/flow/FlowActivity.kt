@@ -1,11 +1,10 @@
 package me.jameshunt.flow
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
 
-data class DeepLinkData(val intent: Intent?)
+data class DeepLinkData(val intentBundle: Bundle?)
 
 abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkData, Unit>> : AppCompatActivity() {
 
@@ -40,6 +39,6 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkD
     internal fun getInitialArgs(): FragmentGroupFlowController.DeepLinkFlowGroup = FragmentGroupFlowController.DeepLinkFlowGroup(
         viewId = R.id.groupSimple,
         deepLinkFlow = getInitialFlow() as Class<FragmentFlowController<DeepLinkData, Unit>>,
-        deepLinkData = DeepLinkData(this.intent)
+        deepLinkData = DeepLinkData(this.intent?.extras)
     )
 }
