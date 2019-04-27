@@ -5,19 +5,23 @@ import me.jameshunt.flow.promise.catch
 import java.lang.ref.WeakReference
 
 object FlowManager {
-
     private var rootFlow: FlowController<*, Unit>? = null
+
+    private lateinit var _activity: WeakReference<FlowActivity<*>>
+    private val flowActivity: FlowActivity<*>
+        get() = _activity.get() ?: throw IllegalStateException("Should never be null")
+
+    internal val fragmentDisplayManager: FragmentDisplayManager
+        get() = flowActivity.fragmentDisplayManager
+
+    internal val rootViewManager: RootViewManager
+        get() = flowActivity.rootViewManager
 
     private val shouldResume: Boolean
         get() = this.rootFlow != null
 
-
-    private lateinit var flowActivity: WeakReference<FlowActivity<*>>
-    internal lateinit var rootViewManager: WeakReference<RootViewManager>
-    lateinit var fragmentDisplayManager: WeakReference<FragmentDisplayManager>
-
     fun launchFlow(flowActivity: FlowActivity<*>) {
-        this.flowActivity = WeakReference(flowActivity)
+        this._activity = WeakReference(flowActivity)
 
         when (shouldResume) {
             true -> this.resumeActiveFlowControllers()
@@ -27,7 +31,7 @@ object FlowManager {
                     .catch { it.printStackTrace() }
                     .always {
                         this.rootFlow = null
-                        this.flowActivity.get()!!.onFlowFinished()
+                        this.flowActivity.onFlowFinished()
                         println("flow completed")
                     }
             }
@@ -35,15 +39,15 @@ object FlowManager {
     }
 
     fun delegateBack() {
-        rootFlow?.handleBack()
+        rootFlow!!.handleBack()
     }
 
     private fun resumeActiveFlowControllers() {
-        fragmentDisplayManager.get()!!.removeAll(blocking = true)
+        fragmentDisplayManager.removeAll(blocking = true)
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*>).findGroup()
 
-        rootViewManager.get()!!.setNewRoot(flowGroup.layoutId)
+        rootViewManager.setNewRoot(flowGroup.layoutId)
 
         flowGroup.resume()
 
@@ -67,7 +71,7 @@ object FlowManager {
             ?: this
     }
 
-    private fun FlowController<*,*>.findGroup(): FragmentGroupFlowController<*>? {
+    private fun FlowController<*, *>.findGroup(): FragmentGroupFlowController<*>? {
         return this.childFlows
             .mapNotNull { it as? FragmentGroupFlowController<*> }
             .firstOrNull()

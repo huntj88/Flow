@@ -19,11 +19,13 @@ abstract class FlowController<Input, Output> {
 
     internal val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
-    fun resume() = resume(currentState)
+    protected abstract fun onStart(state: InitialState<Input>)
 
     protected abstract fun resume(currentState: State)
 
-    protected abstract fun onStart(state: InitialState<Input>)
+    fun resume() = resume(currentState)
+
+    abstract fun handleBack()
 
     protected fun BackState.onBack() {
         this@FlowController.resultPromise.resolve(FlowResult.Back)
@@ -46,12 +48,10 @@ abstract class FlowController<Input, Output> {
         }
         .recoverp { onCatch(it) }
 
-    // internal use
-    fun launchFlow(arg: Input): Promise<FlowResult<Output>> {
+    // internal to this instance use
+    internal fun launchFlow(arg: Input): Promise<FlowResult<Output>> {
         currentState = InitialState(arg)
         this.onStart(currentState as InitialState<Input>)
         return this.resultPromise.promise
     }
-
-    abstract fun handleBack()
 }

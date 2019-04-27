@@ -10,10 +10,8 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         arg: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        val displayManager = FlowManager.fragmentDisplayManager.get()
-            ?: throw IllegalStateException("Should never happen")
 
-        return displayManager
+        return FlowManager.fragmentDisplayManager
             .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
             .also { this.activeFragment = fragmentProxy }
             .flowForResult(arg)
@@ -28,7 +26,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         // remove all the fragments from this flowController before starting the next FlowController
         // (state will still be saved when they get back)
         // The fragments parent views could potentially no longer exist
-        FlowManager.fragmentDisplayManager.get()!!.removeAll()
+        FlowManager.fragmentDisplayManager.removeAll()
 
         val flowController = controller.newInstance()
 
@@ -55,10 +53,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
     }
 
     override fun onDone(arg: Output) {
-        val displayManager = FlowManager.fragmentDisplayManager.get()
-            ?: throw IllegalStateException("Should never happen")
-
-        displayManager.remove(activeFragment)
+        FlowManager.fragmentDisplayManager.remove(activeFragment)
         super.onDone(arg)
     }
 

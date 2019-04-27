@@ -23,7 +23,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
 
     internal fun bind(fragment: FragmentType) {
         this.restoreState(fragment)
-        this.deferredPromise = DeferredPromise()
+        this.deferredPromise = if(this.deferredPromise.promise.isPending) this.deferredPromise else DeferredPromise()
         this.fragment = WeakReference(fragment)
         fragment.proxy = this
     }
