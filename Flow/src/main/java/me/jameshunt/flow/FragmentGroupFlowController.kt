@@ -52,6 +52,7 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     }
 
     override fun resume(currentState: State) {
+        FlowManager.rootViewManager.setNewRoot(layoutId)
         this.onStart(currentState as InitialState<FlowsInGroup<T>>)
     }
 }

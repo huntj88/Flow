@@ -7,9 +7,9 @@ import java.lang.ref.WeakReference
 object FlowManager {
     private var rootFlow: FlowController<*, Unit>? = null
 
-    private lateinit var _activity: WeakReference<FlowActivity<*>>
+    private lateinit var transientActivity: WeakReference<FlowActivity<*>>
     private val flowActivity: FlowActivity<*>
-        get() = _activity.get() ?: throw IllegalStateException("Should never be null")
+        get() = transientActivity.get() ?: throw IllegalStateException("Should never be null")
 
     internal val fragmentDisplayManager: FragmentDisplayManager
         get() = flowActivity.fragmentDisplayManager
@@ -21,7 +21,7 @@ object FlowManager {
         get() = this.rootFlow != null
 
     fun launchFlow(flowActivity: FlowActivity<*>) {
-        this._activity = WeakReference(flowActivity)
+        this.transientActivity = WeakReference(flowActivity)
 
         when (shouldResume) {
             true -> this.resumeActiveFlowControllers()
@@ -46,8 +46,6 @@ object FlowManager {
         fragmentDisplayManager.removeAll(blocking = true)
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*>).findGroup()
-
-        rootViewManager.setNewRoot(flowGroup.layoutId)
 
         flowGroup.resume()
 
@@ -83,7 +81,7 @@ object FlowManager {
     }
 
     //find group must be called before this
-    private fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *> {
+    private tailrec fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *> {
         return when (this.childFlows.isEmpty()) {
             true -> this
 
