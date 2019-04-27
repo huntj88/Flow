@@ -13,7 +13,11 @@ class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
 
     private val splashFragmentProxy = proxy(SplashFragment::class.java)
 
+    private lateinit var deepLinkData: DeepLinkData
+
     override fun onSplash(state: Splash): Promise<FromSplash> {
+        deepLinkData = state.deepLinkData
+
         return this.flow(fragmentProxy = splashFragmentProxy, input = Unit).forResult<Unit, FromSplash>(
             onBack = { TODO() },
             onComplete = { Promise(Load) }
@@ -34,9 +38,15 @@ class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
         )
         val groupArgs = FragmentGroupFlowController.FlowsInGroup(flowsInGroup, Unit)
 
-        return this.flowGroup(ViewPagerGroupController::class.java, groupArgs).forResult<Unit, FromFinishedLoading>(
-            onBack = { Promise(Done(Unit)) },
-            onComplete = { Promise(Done(Unit)) }
-        )
+        return when(deepLinkData.intentBundle == null) {
+            true -> this.flowGroup(ViewPagerGroupController::class.java, groupArgs).forResult<Unit, FromFinishedLoading>(
+                onBack = { Promise(Done(Unit)) },
+                onComplete = { Promise(Done(Unit)) }
+            )
+            false -> this.flow(fragmentProxy = splashFragmentProxy, input = Unit).forResult<Unit, FromFinishedLoading>(
+                onBack = { TODO() },
+                onComplete = { TODO() }
+            )
+        }
     }
 }

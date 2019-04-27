@@ -15,6 +15,8 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkD
         super.onCreate(savedInstanceState)
         this.setContentView(R.layout.activity_flow)
 
+//        this.intent.putExtra("test", "deepLinkData")
+
         FlowManager.launchFlow(flowActivity = this)
     }
 
@@ -39,6 +41,9 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkD
     internal fun getInitialArgs(): FragmentGroupFlowController.DeepLinkFlowGroup = FragmentGroupFlowController.DeepLinkFlowGroup(
         viewId = R.id.groupSimple,
         deepLinkFlow = getInitialFlow() as Class<FragmentFlowController<DeepLinkData, Unit>>,
-        deepLinkData = DeepLinkData(this.intent?.extras)
+        deepLinkData = DeepLinkData(this.intent?.extras).also {
+            // consume the deepLink data,
+            this.intent.extras?.clear()
+        }
     )
 }
