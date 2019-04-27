@@ -1,6 +1,7 @@
 package me.jameshunt.flow
 
 import android.view.ViewGroup
+import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.always
 
 abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): FlowController<FragmentGroupFlowController.FlowsInGroup<T>, Unit>() {
@@ -25,6 +26,22 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
     open fun setupGroup(layout: ViewGroup, flowsInGroup: FlowsInGroup<T>) {}
 
+    fun <NewInput, NewOutput, Controller: FragmentFlowController<NewInput, NewOutput>> flow(
+        controller: Class<Controller>,
+        viewId: ViewId,
+        arg: NewInput
+    ): Promise<FlowResult<NewOutput>> {
+        val flowController = controller
+            .getDeclaredConstructor(ViewId::class.java)
+            .newInstance(viewId)
+
+        childFlows.add(flowController)
+
+        return flowController.launchFlow(arg).always {
+            childFlows.remove(flowController)
+        }
+    }
+
     protected open fun childIndexToDelegateBack(): Int = 0
 
     override fun handleBack() {
@@ -37,4 +54,4 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     }
 }
 
-fun < T: FragmentFlowController<Unit, Unit>> ViewId.toPair(controllerClass: Class<T>): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(this, controllerClass as Class<FragmentFlowController<Unit, Unit>>)
+fun <T: FragmentFlowController<Unit, Unit>> ViewId.toPair(controllerClass: Class<T>): Pair<ViewId, Class<FragmentFlowController<Unit,Unit>>> = Pair(this, controllerClass as Class<FragmentFlowController<Unit, Unit>>)
