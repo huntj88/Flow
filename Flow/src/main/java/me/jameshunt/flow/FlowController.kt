@@ -1,7 +1,6 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.DeferredPromise
-import me.jameshunt.flow.promise.Promise
+import me.jameshunt.flow.promise.*
 
 typealias ViewId = Int
 
@@ -11,7 +10,7 @@ abstract class FlowController<Input, Output> {
 
     data class InitialState<Input>(val arg: Input) : State
 
-    private lateinit var currentState: State
+    protected lateinit var currentState: State
 
     private val resultPromise: DeferredPromise<FlowResult<Output>> =
         DeferredPromise()
@@ -32,12 +31,18 @@ abstract class FlowController<Input, Output> {
         this.resultPromise.resolve(FlowResult.Completed(arg))
     }
 
-    protected fun <T : State> State.transition(to: T, transition: (T) -> Unit) {
-        if (currentState != this) throw IllegalStateException("already transitioned, current state is $currentState, from: $this, to: $to")
-
-        currentState = to
-        transition(to)
-    }
+    fun <Result, From> Promise<FlowResult<Result>>.forResult(
+        onBack: () -> Promise<From>,
+        onComplete: (Result) -> Promise<From>,
+        onCatch: ((Exception) -> Promise<From>) = { throw it }
+    ): Promise<From> = this
+        .thenp {
+            when (it) {
+                is FlowResult.Back -> onBack()
+                is FlowResult.Completed -> onComplete(it.data)
+            }
+        }
+        .recoverp { onCatch(it) }
 
     // internal use
     fun launchFlow(arg: Input): Promise<FlowResult<Output>> {

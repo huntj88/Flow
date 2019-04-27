@@ -54,19 +54,6 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         }
     }
 
-    fun <Result, From> Promise<FlowResult<Result>>.forResult(
-        onBack: () -> Promise<From>,
-        onComplete: (Result) -> Promise<From>,
-        onCatch: ((Exception) -> Promise<From>) = { throw it }
-    ): Promise<From> = this
-        .thenp {
-            when (it) {
-                is FlowResult.Back -> onBack()
-                is FlowResult.Completed -> onComplete(it.data)
-            }
-        }
-        .recoverp { onCatch(it) }
-
     override fun onDone(arg: Output) {
         val displayManager = FlowManager.fragmentDisplayManager.get()
             ?: throw IllegalStateException("Should never happen")

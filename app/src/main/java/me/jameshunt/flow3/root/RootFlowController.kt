@@ -2,50 +2,35 @@ package me.jameshunt.flow3.root
 
 import android.util.Log
 import me.jameshunt.flow.*
-import me.jameshunt.flow3.R
+import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow3.TestFragment
-import me.jameshunt.flow3.ViewPagerGroupController
+import me.jameshunt.flow3.root.GeneratedRootFlow.RootFlowState.*
 
-class RootFlowController(viewId: ViewId) : GeneratedRootFlow<Unit, Unit>(viewId) {
+class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
-//    private val testFragmentProxy2 = proxy(TestFragment::class.java)
 
-    override fun onStart(state: InitialState<Unit>) {
-        Log.d("root", "start")
-        state.toDeepLink("hello")
-    }
-
-    override fun onDeepLink(state: RootFlowState.DeepLink) {
-        Log.d("root", state.arg)
-        this.flow(fragmentProxy = testFragmentProxy, arg = state.arg)
-            .complete { state.toDeepLink2("wooow") }
-            .back {
-                Log.d("root", "back")
-                state.toBack()
+    override fun onOne(state: One): Promise<FromOne> {
+        return this.flow(this.testFragmentProxy, "wow").forResult<Unit, FromOne>(
+            onBack = { Promise(Three("wow")) },
+            onComplete = {
+                // wrapper in a Promise in case you need to do some async stuff
+                Promise(Four("complete"))
             }
+        )
     }
 
-    override fun onDeepLink2(state: RootFlowState.DeepLink2) {
-//        Log.d("root", state.arg)
-//        this.flow(fragmentProxy = testFragmentProxy2, arg = state.arg)
-//            .complete { Log.d("root", "fragment resolved") }
-//            .back { state.toBack() }
+    override fun onTwo(state: Two): Promise<FromTwo> {
+        TODO()
+    }
 
-        val groupArgs = FragmentGroupFlowController.FlowsInGroup(
-            mapOf(
-                RootFlowController::class.java.putInView(R.id.groupPagerZero),
-                RootFlowController::class.java.putInView(R.id.groupPagerOne),
-                RootFlowController::class.java.putInView(R.id.groupPagerTwo)
-            ),
-            Unit
-        )
+    override fun onThree(state: Three): Promise<FromThree> {
+        TODO()
+    }
 
-        this.flowGroup(controller = ViewPagerGroupController::class.java, arg = groupArgs)
-            .back { state.toBack() }
-
-//        this.flow(controller = RootFlowController::class.java,arg = Unit)
-//            .back { state.toBack() }
+    override fun onFour(state: Four): Promise<FromFour> {
+        Log.d("wow","sup")
+        return Promise(One)
     }
 }
 
