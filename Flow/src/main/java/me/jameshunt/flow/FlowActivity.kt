@@ -35,9 +35,11 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkD
 
     abstract fun getInitialFlow(): Class<RootFlowController>
 
-    fun getInitialGroupFlow(): DeepLinkGroupController = DeepLinkGroupController(DeepLinkData(this.intent))
-    fun getInitialArgs(): FragmentGroupFlowController.FlowsInGroup<Unit> = FragmentGroupFlowController.FlowsInGroup(
-        map = mapOf(R.id.groupSimple to getInitialFlow() as Class<FragmentFlowController<*, *>>),
-        extra = Unit
+    fun getInitialGroupFlow(): SimpleGroupController = SimpleGroupController()
+
+    internal fun getInitialArgs(): FragmentGroupFlowController.DeepLinkFlowGroup = FragmentGroupFlowController.DeepLinkFlowGroup(
+        viewId = R.id.groupSimple,
+        deepLinkFlow = getInitialFlow() as Class<FragmentFlowController<DeepLinkData, Unit>>,
+        deepLinkData = DeepLinkData(this.intent)
     )
 }
