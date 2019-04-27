@@ -42,5 +42,5 @@ fun <OUT> Promise<OUT>.catch(on: PromiseDispatch? = null, execute: (Exception) -
 fun <OUT> Promise<OUT>.always(on: PromiseDispatch? = null, execute: () -> Unit): Promise<OUT> =
     this.always(on = (on ?: PromiseDispatch.MAIN).executor, execute = execute)
 
-
-fun <T> Promise<T>.doAlso(also: (T) -> Unit): Promise<T> = this.then { result -> result.also { also(result) } }
+fun <T> Promise<T>.doAlso(on: PromiseDispatch? = null, also: (T) -> Unit): Promise<T> =
+    this.then(on = on) { result -> result.also { also(result) } }
