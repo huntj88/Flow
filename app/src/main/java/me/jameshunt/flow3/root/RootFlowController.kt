@@ -21,15 +21,16 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
     }
 
     override fun onTwo(state: Two): Promise<FromTwo> {
-        TODO()
+        return Promise(Back)
     }
 
     override fun onThree(state: Three): Promise<FromThree> {
-        TODO()
+        Log.d("three", "going to 2")
+        return Promise(Two("no"))
     }
 
     override fun onFour(state: Four): Promise<FromFour> {
-        Log.d("wow","sup")
+        Log.d("four","going to 1")
         return Promise(One)
     }
 }

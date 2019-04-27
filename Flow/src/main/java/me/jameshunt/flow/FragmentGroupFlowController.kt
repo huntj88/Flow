@@ -11,6 +11,8 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
         val extra: T
     )
 
+    object Back: BackState
+
     override fun onStart(state: InitialState<FlowsInGroup<T>>) {
         val layout = FlowManager.rootViewManager.get()!!.setNewRoot(layoutId)
         setupGroup(layout, state.arg)
@@ -18,7 +20,7 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
         if(childFlows.isEmpty()) {
             state.arg.map.forEach { (viewId, flowController) ->
                 this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
-                    this.onBack()
+                    Back.onBack()
                 }
             }
         }

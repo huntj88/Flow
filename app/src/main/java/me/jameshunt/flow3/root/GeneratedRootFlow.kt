@@ -13,6 +13,8 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         interface FromThree
         interface FromFour
 
+        object Back: RootFlowState(), BackState, FromTwo
+
         object One : RootFlowState(), FromFour
         data class Two(val arg: String) : RootFlowState(), FromThree
         data class Three(val arg: String) : RootFlowState(), FromOne
@@ -34,7 +36,7 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
             when(it) {
                 is RootFlowState.Three -> toThree(it)
                 is RootFlowState.Four -> toFour(it)
-                else -> throw IllegalStateException("Illegal transition")
+                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
@@ -44,7 +46,8 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         onTwo(state).then {
             when(it) {
                 is RootFlowState.Four -> toFour(it)
-                else -> throw IllegalStateException("Illegal transition")
+                is RootFlowState.Back -> it.onBack()
+                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
@@ -54,7 +57,7 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         onThree(state).then {
             when(it) {
                 is RootFlowState.Two -> toTwo(it)
-                else -> throw IllegalStateException("Illegal transition")
+                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
@@ -64,7 +67,7 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         onFour(state).then {
             when(it) {
                 is RootFlowState.One -> toOne(it)
-                else -> throw IllegalStateException("Illegal transition")
+                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
@@ -81,6 +84,8 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         when(this) {
             is RootFlowState.One -> this@GeneratedRootFlow.onOne(this)
             is RootFlowState.Two -> this@GeneratedRootFlow.onTwo(this)
+            is RootFlowState.Three -> this@GeneratedRootFlow.onThree(this)
+            is RootFlowState.Four -> this@GeneratedRootFlow.onFour(this)
         }
     }
 

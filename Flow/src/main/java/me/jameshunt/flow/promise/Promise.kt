@@ -80,9 +80,11 @@ open class Promise<OUT> {
                 val out = dispatch(value)
                 Status.Resolved(out)
             } catch (err: Exception) {
+                err.printStackTrace()
                 try {
                     recover(err)
                 } catch (err2: Exception) {
+                    err.printStackTrace()
                     Status.Rejected(err2)
                 }
             }

@@ -8,6 +8,8 @@ abstract class FlowController<Input, Output> {
 
     interface State
 
+    interface BackState
+
     data class InitialState<Input>(val arg: Input) : State
 
     protected lateinit var currentState: State
@@ -23,8 +25,8 @@ abstract class FlowController<Input, Output> {
 
     protected abstract fun onStart(state: InitialState<Input>)
 
-    protected open fun onBack() {
-        this.resultPromise.resolve(FlowResult.Back)
+    protected fun BackState.onBack() {
+        this@FlowController.resultPromise.resolve(FlowResult.Back)
     }
 
     protected open fun onDone(arg: Output) {
