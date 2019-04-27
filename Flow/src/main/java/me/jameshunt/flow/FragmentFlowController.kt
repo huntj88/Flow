@@ -61,7 +61,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         super.onDone(output)
     }
 
-    override fun handleBack() {
+    final override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
     }

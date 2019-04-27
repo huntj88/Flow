@@ -72,7 +72,7 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         }
     }
 
-    override fun resume(currentState: State) {
+    final override fun resume(currentState: State) {
         when (currentState) {
             is InitialState<*> -> this.onStart(currentState as InitialState<Unit>)
             is RootFlowState -> currentState.resumeState()

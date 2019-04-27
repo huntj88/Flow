@@ -67,7 +67,7 @@ abstract class GeneratedSplashController(viewId: ViewId): FragmentFlowController
         }
     }
 
-    override fun resume(currentState: State) {
+    final override fun resume(currentState: State) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }

@@ -13,7 +13,7 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
     object Back: BackState
 
-    override fun onStart(state: InitialState<FlowsInGroup<T>>) {
+    final override fun onStart(state: InitialState<FlowsInGroup<T>>) {
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
         setupGroup(layout, state.input)
 
@@ -46,12 +46,12 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
     protected open fun childIndexToDelegateBack(): Int = 0
 
-    override fun handleBack() {
+    final override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows[childIndexToDelegateBack()].handleBack()
     }
 
-    override fun resume(currentState: State) {
+    final override fun resume(currentState: State) {
         FlowManager.rootViewManager.setNewRoot(layoutId)
         this.onStart(currentState as InitialState<FlowsInGroup<T>>)
     }
