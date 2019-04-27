@@ -69,26 +69,6 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
         }
     }
 
-//    fun InitialState<Input>.toDeepLink(arg: String) {
-//        this.transition(to = RootFlowState.One(arg)) {
-//            this@GeneratedRootFlow.onOne(it)
-//        }
-//    }
-//
-//    fun RootFlowState.One.toDeepLink2(arg: String) {
-//        this.transition(to = RootFlowState.Two(arg)) {
-//            this@GeneratedRootFlow.onTwo(it)
-//        }
-//    }
-//
-//    fun RootFlowState.One.toBack() {
-//        this@GeneratedRootFlow.onBack()
-//    }
-//
-//    fun RootFlowState.Two.toBack() {
-//        this@GeneratedRootFlow.onBack()
-//    }
-
     override fun resume(currentState: State) {
         when (currentState) {
             is InitialState<*> -> this.onStart(currentState as InitialState<Unit>)
