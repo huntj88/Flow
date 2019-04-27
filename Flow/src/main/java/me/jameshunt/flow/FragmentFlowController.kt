@@ -1,7 +1,6 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.always
+import me.jameshunt.flow.promise.*
 
 abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
 
@@ -54,6 +53,19 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
             childFlows.remove(flowController)
         }
     }
+
+    fun <Result, From> Promise<FlowResult<Result>>.forResult(
+        onBack: () -> Promise<From>,
+        onComplete: (Result) -> Promise<From>,
+        onCatch: ((Exception) -> Promise<From>) = { throw it }
+    ): Promise<From> = this
+        .thenp {
+            when (it) {
+                is FlowResult.Back -> onBack()
+                is FlowResult.Completed -> onComplete(it.data)
+            }
+        }
+        .recoverp { onCatch(it) }
 
     override fun onDone(arg: Output) {
         val displayManager = FlowManager.fragmentDisplayManager.get()
