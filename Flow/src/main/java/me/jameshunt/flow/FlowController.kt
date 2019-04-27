@@ -10,7 +10,7 @@ abstract class FlowController<Input, Output> {
 
     interface BackState
 
-    data class InitialState<Input>(val arg: Input) : State
+    data class InitialState<Input>(val input: Input) : State
 
     protected lateinit var currentState: State
 
@@ -31,8 +31,8 @@ abstract class FlowController<Input, Output> {
         this@FlowController.resultPromise.resolve(FlowResult.Back)
     }
 
-    protected open fun onDone(arg: Output) {
-        this.resultPromise.resolve(FlowResult.Completed(arg))
+    protected open fun onDone(output: Output) {
+        this.resultPromise.resolve(FlowResult.Completed(output))
     }
 
     fun <Result, From> Promise<FlowResult<Result>>.forResult(
@@ -49,8 +49,8 @@ abstract class FlowController<Input, Output> {
         .recoverp { onCatch(it) }
 
     // internal to this instance use
-    internal fun launchFlow(arg: Input): Promise<FlowResult<Output>> {
-        currentState = InitialState(arg)
+    internal fun launchFlow(input: Input): Promise<FlowResult<Output>> {
+        currentState = InitialState(input)
         this.onStart(currentState as InitialState<Input>)
         return this.resultPromise.promise
     }

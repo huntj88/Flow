@@ -11,7 +11,7 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
     private val testFragmentProxy = proxy(TestFragment::class.java)
 
     override fun onOne(state: One): Promise<FromOne> {
-        return this.flow(this.testFragmentProxy, "wow").forResult<Unit, FromOne>(
+        return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, FromOne>(
             onBack = { Promise(Three("wow")) },
             onComplete = {
                 // wrapper in a Promise in case you need to do some async stuff

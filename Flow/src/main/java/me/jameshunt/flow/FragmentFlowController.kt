@@ -8,19 +8,19 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
-        arg: FragInput
+        input: FragInput
     ): Promise<FlowResult<FragOutput>> {
 
         return FlowManager.fragmentDisplayManager
             .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
             .also { this.activeFragment = fragmentProxy }
-            .flowForResult(arg)
+            .flowForResult(input)
             .always { this.activeFragment = null }
     }
 
     fun <GroupInput, Controller: FragmentGroupFlowController<GroupInput>> flowGroup(
         controller: Class<Controller>,
-        arg: FragmentGroupFlowController.FlowsInGroup<GroupInput>
+        input: FragmentGroupFlowController.FlowsInGroup<GroupInput>
     ): Promise<FlowResult<Unit>> {
 
         // remove all the fragments from this flowController before starting the next FlowController
@@ -32,14 +32,14 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(arg).always {
+        return flowController.launchFlow(input).always {
             childFlows.remove(flowController)
         }
     }
 
     fun <NewInput, NewOutput, Controller: FragmentFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
-        arg: NewInput
+        input: NewInput
     ): Promise<FlowResult<NewOutput>> {
         val flowController = controller
             .getDeclaredConstructor(ViewId::class.java)
@@ -47,14 +47,14 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(arg).always {
+        return flowController.launchFlow(input).always {
             childFlows.remove(flowController)
         }
     }
 
-    override fun onDone(arg: Output) {
+    override fun onDone(output: Output) {
         FlowManager.fragmentDisplayManager.remove(activeFragment)
-        super.onDone(arg)
+        super.onDone(output)
     }
 
     override fun handleBack() {

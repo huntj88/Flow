@@ -17,7 +17,7 @@ class TestFragment: FlowFragment<String, Unit>() {
         }
     }
 
-    override fun flowWillRun(arg: String) {
-        (this.view as TextView).text = arg
+    override fun flowWillRun(input: String) {
+        (this.view as TextView).text = input
     }
 }

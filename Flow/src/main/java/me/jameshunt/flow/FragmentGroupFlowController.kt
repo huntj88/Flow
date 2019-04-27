@@ -15,11 +15,11 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
     override fun onStart(state: InitialState<FlowsInGroup<T>>) {
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
-        setupGroup(layout, state.arg)
+        setupGroup(layout, state.input)
 
         if(childFlows.isEmpty()) {
-            state.arg.map.forEach { (viewId, flowController) ->
-                this.flow(controller = flowController, viewId = viewId, arg = Unit).always {
+            state.input.map.forEach { (viewId, flowController) ->
+                this.flow(controller = flowController, viewId = viewId, input = Unit).always {
                     Back.onBack()
                 }
             }
@@ -31,7 +31,7 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
     fun <NewInput, NewOutput, Controller: FragmentFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
         viewId: ViewId,
-        arg: NewInput
+        input: NewInput
     ): Promise<FlowResult<NewOutput>> {
         val flowController = controller
             .getDeclaredConstructor(ViewId::class.java)
@@ -39,7 +39,7 @@ abstract class FragmentGroupFlowController<T>(internal val layoutId: LayoutId): 
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(arg).always {
+        return flowController.launchFlow(input).always {
             childFlows.remove(flowController)
         }
     }

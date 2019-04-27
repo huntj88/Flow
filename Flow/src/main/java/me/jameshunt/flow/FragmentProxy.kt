@@ -50,7 +50,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
         this.deferredPromise.resolve(FlowResult.Back)
     }
 
-    internal fun resolve(arg: FragOutput) {
-        this.deferredPromise.resolve(FlowResult.Completed(arg))
+    internal fun resolve(output: FragOutput) {
+        this.deferredPromise.resolve(FlowResult.Completed(output))
     }
 }
