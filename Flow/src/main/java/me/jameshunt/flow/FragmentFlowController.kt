@@ -22,10 +22,12 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
             .always { this.activeFragment = null }
     }
 
-    fun <GroupInput, Controller: FragmentGroupFlowController<GroupInput>> flowGroup(
+    fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
-        input: FragmentGroupFlowController.FlowsInGroup<GroupInput>
-    ): Promise<FlowResult<Unit>> {
+        input: GroupInput
+    ): Promise<FlowResult<GroupOutput>>
+            where GroupInput : FragmentGroupFlowController.GroupInput,
+                  Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
 
         // remove all the fragments from this flowController before starting the next FlowController
         // (state will still be saved when they get back)
@@ -41,7 +43,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         }
     }
 
-    fun <NewInput, NewOutput, Controller: FragmentFlowController<NewInput, NewOutput>> flow(
+    fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {

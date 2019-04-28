@@ -44,3 +44,5 @@ fun <OUT> Promise<OUT>.always(on: PromiseDispatch? = null, execute: () -> Unit):
 
 fun <T> Promise<T>.doAlso(on: PromiseDispatch? = null, also: (T) -> Unit): Promise<T> =
     this.then(on = on) { result -> result.also { also(result) } }
+
+fun <T> List<Promise<T>>.firstToResolve(): Promise<T> = Promise.firstToResolve(this)

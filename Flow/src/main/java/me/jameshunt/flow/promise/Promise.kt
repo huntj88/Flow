@@ -310,6 +310,34 @@ open class Promise<OUT> {
             }
         }
 
+        fun <T> firstToResolve(promises: Iterable<Promise<T>>): Promise<T> {
+            if (!promises.iterator().hasNext()) { throw IllegalArgumentException("empty iterable") }
+
+            return Promise { resolve, reject ->
+                promises.forEach {
+                    it.always(on = null) {
+                        val status = it.output.status
+                        val result = when (status) {
+                            is Status.Pending -> Result.Rejected<T>(
+                               IllegalStateException()
+                            )
+                            is Status.Rejected -> Result.Rejected<T>(
+                                status.error
+                            )
+                            is Status.Resolved -> Result.Resolved(
+                                status.value
+                            )
+                        }
+
+                        when(result) {
+                            is Result.Resolved -> resolve(result.value)
+                            is Result.Rejected -> reject(result.error)
+                        }
+                    }
+                }
+            }
+        }
+
         fun <T> resolveSerial(promises: Iterable<Promise<T>>): Promise<Iterable<T>> {
             val it = promises.iterator()
             if (!it.hasNext()) { return Promise(emptyList())

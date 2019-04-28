@@ -45,7 +45,7 @@ internal object FlowManager {
     private fun resumeActiveFlowControllers() {
         fragmentDisplayManager.removeAll(blocking = true)
 
-        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*>).findGroup()
+        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
 
         flowGroup.resume()
 
@@ -56,9 +56,9 @@ internal object FlowManager {
             .forEach { it.resume() }
     }
 
-    private fun FragmentGroupFlowController<*>.findGroup(): FragmentGroupFlowController<*> {
+    private fun FragmentGroupFlowController<*, *>.findGroup(): FragmentGroupFlowController<*, *> {
         return this.childFlows
-            .mapNotNull { it as? FragmentGroupFlowController<*> }
+            .mapNotNull { it as? FragmentGroupFlowController<*,*> }
             .firstOrNull()
             ?.findGroup()
 
@@ -69,9 +69,9 @@ internal object FlowManager {
             ?: this
     }
 
-    private fun FlowController<*, *>.findGroup(): FragmentGroupFlowController<*>? {
+    private fun FlowController<*, *>.findGroup(): FragmentGroupFlowController<*, *>? {
         return this.childFlows
-            .mapNotNull { it as? FragmentGroupFlowController<*> }
+            .mapNotNull { it as? FragmentGroupFlowController<*, *> }
             .firstOrNull()
             ?.findGroup()
 

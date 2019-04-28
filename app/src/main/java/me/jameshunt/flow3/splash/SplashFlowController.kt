@@ -4,7 +4,6 @@ import me.jameshunt.flow.*
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.PromiseDispatch
 import me.jameshunt.flow.promise.then
-import me.jameshunt.flow3.R
 import me.jameshunt.flow3.ViewPagerGroupController
 import me.jameshunt.flow3.root.RootFlowController
 import me.jameshunt.flow3.splash.GeneratedSplashController.SplashFlowState.*
@@ -32,15 +31,14 @@ class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
     }
 
     override fun onFinishedLoading(state: FinishedLoading): Promise<FromFinishedLoading> {
-        val flowsInGroup = mapOf(
-            SummaryFlowController::class.java.putInView(R.id.groupPagerZero),
-            RootFlowController::class.java.putInView(R.id.groupPagerOne),
-            RootFlowController::class.java.putInView(R.id.groupPagerTwo)
+        val input = ViewPagerGroupController.input(
+            pageZero = SummaryFlowController::class.java,
+            pageOne = RootFlowController::class.java,
+            pageTwo = RootFlowController::class.java
         )
-        val groupArgs = FragmentGroupFlowController.FlowsInGroup(flowsInGroup, Unit)
 
         return when(deepLinkData.intentBundle == null) {
-            true -> this.flowGroup(ViewPagerGroupController::class.java, groupArgs).forResult<Unit, FromFinishedLoading>(
+            true -> this.flowGroup(ViewPagerGroupController::class.java, input).forResult<Unit, FromFinishedLoading>(
                 onBack = { Promise(Done(Unit)) },
                 onComplete = { Promise(Done(Unit)) }
             )
