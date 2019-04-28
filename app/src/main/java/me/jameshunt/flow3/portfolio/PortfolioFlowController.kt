@@ -4,9 +4,13 @@ import me.jameshunt.flow.FragmentFlowController
 import me.jameshunt.flow.ViewId
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.then
+import me.jameshunt.flow.proxy
+import me.jameshunt.flow3.TestFragment
 
 
 class PortfolioFlowController(viewId: ViewId): GeneratedPortfolioController(viewId) {
+
+    private val testFragmentProxy = proxy(TestFragment::class.java)
 
     override fun onGatherData(state: PortfolioFlowState.GatherData): Promise<PortfolioFlowState.FromGatherData> {
         return Promise(PortfolioFlowState.Render)
@@ -17,7 +21,10 @@ class PortfolioFlowController(viewId: ViewId): GeneratedPortfolioController(view
     }
 
     override fun onTransactions(state: PortfolioFlowState.Transactions): Promise<PortfolioFlowState.FromTransactions> {
-        TODO()
+        return this.flow(fragmentProxy = testFragmentProxy, input = "wooooow").forResult<Unit, PortfolioFlowState.FromTransactions>(
+            onBack = { Promise(PortfolioFlowState.Render) },
+            onComplete = { Promise(PortfolioFlowState.Render) }
+        )
     }
 }
 
@@ -31,10 +38,8 @@ abstract class GeneratedPortfolioController(viewId: ViewId): FragmentFlowControl
         object Back : PortfolioFlowState(), BackState
 
         object GatherData : PortfolioFlowState()
-        object Render : PortfolioFlowState(),
-            FromGatherData
-        object Transactions : PortfolioFlowState(),
-            FromRender
+        object Render : PortfolioFlowState(), FromGatherData, FromTransactions
+        object Transactions : PortfolioFlowState(), FromRender
     }
 
     protected abstract fun onGatherData(state: PortfolioFlowState.GatherData): Promise<PortfolioFlowState.FromGatherData>
@@ -68,11 +73,10 @@ abstract class GeneratedPortfolioController(viewId: ViewId): FragmentFlowControl
     private fun toTransactions(state: PortfolioFlowState.Transactions) {
         currentState = state
         onTransactions(state).then {
-            //            when(it) {
-////                is SummaryFlowState.Ba-> toThree(it)
-//                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
-//            }
-            throw IllegalStateException("Illegal transition from: $state, to: $it")
+            when(it) {
+                is PortfolioFlowState.Render -> toRender(it)
+                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
+            }
         }
     }
 

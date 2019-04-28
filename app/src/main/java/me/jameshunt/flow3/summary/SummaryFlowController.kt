@@ -4,20 +4,36 @@ import me.jameshunt.flow.FragmentFlowController
 import me.jameshunt.flow.ViewId
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.then
+import me.jameshunt.flow.proxy
+import me.jameshunt.flow3.TestFragment
+import me.jameshunt.flow3.portfolio.PortfolioFlowController
 
 
 class SummaryFlowController(viewId: ViewId): GeneratedSummaryController(viewId) {
+
+    private val testFragmentProxy = proxy(TestFragment::class.java)
 
     override fun onGatherData(state: SummaryFlowState.GatherData): Promise<SummaryFlowState.FromGatherData> {
         return Promise(SummaryFlowState.Render)
     }
 
     override fun onRender(state: SummaryFlowState.Render): Promise<SummaryFlowState.FromRender> {
-        return Promise(SummaryFlowState.CryptoSelected)
+        return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, SummaryFlowState.FromRender>(
+            onBack = { TODO() },
+            onComplete = {
+                // wrapper in a Promise in case you need to do some async stuff
+                Promise(SummaryFlowState.CryptoSelected)
+            }
+        )
     }
 
     override fun onCryptoSelected(state: SummaryFlowState.CryptoSelected): Promise<SummaryFlowState.FromCryptoSelected> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return this.flow(controller = PortfolioFlowController::class.java, input = Unit).forResult(
+            onBack = { TODO() },
+            onComplete = {
+                TODO()
+            }
+        )
     }
 }
 

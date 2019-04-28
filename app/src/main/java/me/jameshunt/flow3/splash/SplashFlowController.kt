@@ -8,6 +8,7 @@ import me.jameshunt.flow3.R
 import me.jameshunt.flow3.ViewPagerGroupController
 import me.jameshunt.flow3.root.RootFlowController
 import me.jameshunt.flow3.splash.GeneratedSplashController.SplashFlowState.*
+import me.jameshunt.flow3.summary.SummaryFlowController
 
 class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
 
@@ -32,7 +33,7 @@ class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
 
     override fun onFinishedLoading(state: FinishedLoading): Promise<FromFinishedLoading> {
         val flowsInGroup = mapOf(
-            RootFlowController::class.java.putInView(R.id.groupPagerZero),
+            SummaryFlowController::class.java.putInView(R.id.groupPagerZero),
             RootFlowController::class.java.putInView(R.id.groupPagerOne),
             RootFlowController::class.java.putInView(R.id.groupPagerTwo)
         )
