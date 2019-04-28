@@ -1,0 +1,9 @@
+@startuml
+
+[*] -> GatherData
+GatherData --> Render
+Render --> Back
+Render -> CryptoSelected
+CryptoSelected -> Render
+
+@enduml
