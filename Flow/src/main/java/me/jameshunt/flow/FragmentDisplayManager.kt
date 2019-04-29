@@ -20,7 +20,7 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
 
     fun saveAll() {
         fragmentManager.fragments.forEach {
-            (it as FlowFragment<*, *>).proxy.saveState()
+            (it as FlowFragment<*, *>).proxy!!.saveState()
         }
     }
 

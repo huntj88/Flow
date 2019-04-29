@@ -79,20 +79,4 @@ abstract class GeneratedPortfolioController(viewId: ViewId): FragmentFlowControl
             }
         }
     }
-
-    final override fun resume(currentState: State) {
-        when (currentState) {
-            is InitialState<*> -> this.onStart(currentState as InitialState<Unit>)
-            is PortfolioFlowState -> currentState.resumeState()
-            else -> throw IllegalStateException("State is not part of this flow")
-        }
-    }
-
-    private fun PortfolioFlowState.resumeState() {
-        when(this) {
-            is PortfolioFlowState.GatherData -> this@GeneratedPortfolioController.onGatherData(this)
-            is PortfolioFlowState.Render -> this@GeneratedPortfolioController.onRender(this)
-            is PortfolioFlowState.Transactions -> this@GeneratedPortfolioController.onTransactions(this)
-        }
-    }
 }

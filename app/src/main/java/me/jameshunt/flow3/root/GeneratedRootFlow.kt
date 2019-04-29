@@ -71,22 +71,4 @@ abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, 
             }
         }
     }
-
-    final override fun resume(currentState: State) {
-        when (currentState) {
-            is InitialState<*> -> this.onStart(currentState as InitialState<Unit>)
-            is RootFlowState -> currentState.resumeState()
-            else -> throw IllegalStateException("State is not part of this flow")
-        }
-    }
-
-    private fun RootFlowState.resumeState() {
-        when(this) {
-            is RootFlowState.One -> this@GeneratedRootFlow.onOne(this)
-            is RootFlowState.Two -> this@GeneratedRootFlow.onTwo(this)
-            is RootFlowState.Three -> this@GeneratedRootFlow.onThree(this)
-            is RootFlowState.Four -> this@GeneratedRootFlow.onFour(this)
-        }
-    }
-
 }

@@ -5,7 +5,7 @@ import me.jameshunt.flow.promise.Promise
 
 abstract class FlowFragment<Input, Output> : Fragment() {
 
-    lateinit var proxy: FragmentProxy<Input, Output, *>
+    var proxy: FragmentProxy<Input, Output, *>? = null
 
     private var input: Input? = null
 
@@ -14,16 +14,17 @@ abstract class FlowFragment<Input, Output> : Fragment() {
         this.input = input
 
         this.view?.let {
+            // will this ever be called here? TODO
             this.flowWillRun(input)
         }
 
-        return proxy.deferredPromise.promise
+        return proxy!!.deferredPromise.promise
     }
 
     abstract fun flowWillRun(input: Input)
 
     fun resolve(output: Output) {
-        this.proxy.resolve(output)
+        this.proxy!!.resolve(output)
     }
 
     override fun onResume() {

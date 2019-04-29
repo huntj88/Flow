@@ -1,5 +1,7 @@
 @startuml
 
+GatherData : val data: Book
+
 [*] -> GatherData
 GatherData --> Render
 Render --> Back

@@ -88,20 +88,4 @@ abstract class GeneratedSummaryController(viewId: ViewId): FragmentFlowControlle
             throw IllegalStateException("Illegal transition from: $state, to: $it")
         }
     }
-
-    final override fun resume(currentState: State) {
-        when (currentState) {
-            is InitialState<*> -> this.onStart(currentState as InitialState<Unit>)
-            is SummaryFlowState -> currentState.resumeState()
-            else -> throw IllegalStateException("State is not part of this flow")
-        }
-    }
-
-    private fun SummaryFlowState.resumeState() {
-        when(this) {
-            is SummaryFlowState.GatherData -> this@GeneratedSummaryController.onGatherData(this)
-            is SummaryFlowState.Render -> this@GeneratedSummaryController.onRender(this)
-            is SummaryFlowState.CryptoSelected -> this@GeneratedSummaryController.onCryptoSelected(this)
-        }
-    }
 }

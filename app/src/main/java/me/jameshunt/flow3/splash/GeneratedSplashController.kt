@@ -58,20 +58,4 @@ abstract class GeneratedSplashController(viewId: ViewId): FragmentFlowController
             }
         }
     }
-
-    final override fun resume(currentState: State) {
-        when (currentState) {
-            is InitialState<*> -> this.onStart(currentState as InitialState<DeepLinkData>)
-            is SplashFlowState -> currentState.resumeState()
-            else -> throw IllegalStateException("State is not part of this flow")
-        }
-    }
-
-    private fun SplashFlowState.resumeState() {
-        when(this) {
-            is SplashFlowState.Splash -> this@GeneratedSplashController.onSplash(this)
-            is SplashFlowState.Load -> this@GeneratedSplashController.onLoad(this)
-            is SplashFlowState.FinishedLoading -> this@GeneratedSplashController.onFinishedLoading(this)
-        }
-    }
 }
