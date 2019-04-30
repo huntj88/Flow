@@ -15,6 +15,8 @@ class SealedClassGenerator {
     private fun Set<State>.generateFromInterfaces(): String {
         return this
             .filter { it.name != "[*]" }
+            .filter { it.name != "Done" }
+            .filter { it.name != "Back" }
             .joinToString("\n") { "interface From${it.name}" }
     }
 
@@ -24,7 +26,10 @@ class SealedClassGenerator {
             val from = this.from.filter { it != "[*]" }.joinToString(", ") { "From$it" }.let {
                 if(it.isNotBlank()) { ", $it" } else ""
             }
-            return ": ${flowName}FlowState()$from"
+            return ": ${flowName}FlowState()$from".let {
+                if(this.name == "Back") "$it, BackState"
+                else it
+            }
         }
 
         return this.filter { it.name != "[*]" }.joinToString("\n") {

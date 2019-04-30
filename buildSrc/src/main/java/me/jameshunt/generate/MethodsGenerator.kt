@@ -46,9 +46,18 @@ class MethodsGenerator {
         """
     }
 
-    fun Set<State>.fromWhen(flowName: String, state: State): String {
+    private fun Set<State>.fromWhen(flowName: String, state: State): String {
+
+        fun String.handleBackAndDone(): String {
+            return when(this) {
+                "Back" -> "it.onBack()"
+                "Done" -> "this@Generated${flowName}Controller.onDone(it.output as Output)"
+                else -> "to$this(it)"
+            }
+        }
+
         return this.filter { it.from.contains(state.name) }.joinToString("\n") {
-            "is ${flowName}FlowState.${it.name} -> to${it.name}(it)"
+            "is ${flowName}FlowState.${it.name} -> ${it.name.handleBackAndDone()}"
         }
     }
 }

@@ -6,15 +6,33 @@ class FlowGenerator(private val file: File) {
 
     fun generate() {
         val states = PumlParser().parse(file)
-        states.forEach(::println)
 
-        println()
-//        println(states.generateStates("Summary"))
-//        println(states.generateFromInterfaces())
-        println(SealedClassGenerator().generate("Summary", states))
-        println(MethodsGenerator().generateAbstract("Summary", states))
-        println(MethodsGenerator().generateStart("Summary", states))
-        println(MethodsGenerator().generateToMethods("Summary", states))
+        val flowName = file.nameWithoutExtension
+
+        val imports = """
+            import me.jameshunt.flow.FragmentFlowController
+            import me.jameshunt.flow.ViewId
+            import me.jameshunt.flow.promise.Promise
+            import me.jameshunt.flow.promise.then
+        """
+
+        val generatedClass =
+            "abstract class Generated${flowName}Controller(viewId: ViewId): FragmentFlowController<Unit, Unit>(viewId) {"
+        val sealedClass = SealedClassGenerator().generate("Summary", states)
+        val abstractMethods = MethodsGenerator().generateAbstract("Summary", states)
+        val startMethod = MethodsGenerator().generateStart("Summary", states)
+
+        val toMethods = MethodsGenerator().generateToMethods("Summary", states)
+
+        """
+            $imports
+            $generatedClass
+            $sealedClass
+            $abstractMethods
+            $startMethod
+            $toMethods
+            }
+        """.let(::println)
     }
 
 
