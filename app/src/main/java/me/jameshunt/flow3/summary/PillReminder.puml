@@ -1,0 +1,42 @@
+@startuml
+
+[*] --> CheckPillReminderOwner
+CheckPillReminderOwner --> UserWarning
+CheckPillReminderOwner --> CheckReminderSettings
+CheckPillReminderOwner --> DownloadError
+CheckPillReminderOwner --> SwitchOwner
+CheckPillReminderOwner --> ReauthNeeded
+
+ReauthNeeded --> CheckPillReminderOwner
+ReauthNeeded --> SignUpOrLogin
+
+UserWarning --> SwitchOwner
+UserWarning --> Back
+
+SwitchOwner --> Carousel
+SwitchOwner --> CheckReminderSettings
+
+Carousel --> SignUpOrLogin
+Carousel --> TermsAndConditions
+Carousel --> Back
+
+SignUpOrLogin --> CheckReminderSettings
+SignUpOrLogin --> Back
+
+TermsAndConditions --> CreateReminder
+TermsAndConditions --> ReminderDashboard
+TermsAndConditions --> CheckReminderSettingsError
+
+CheckReminderSettingsError -> Back
+
+CreateReminder --> ReminderDashboard
+CreateReminder --> Back
+
+CreateReminderError --> SignUpOrLogin
+CreateReminderError --> Back
+
+ReminderDashboard --> CreateReminder
+ReminderDashboard --> CreateReminderError
+ReminderDashboard --> Back
+
+@enduml
