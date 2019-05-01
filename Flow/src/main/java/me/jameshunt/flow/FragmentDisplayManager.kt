@@ -14,7 +14,12 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
 
         fragmentProxy.bind(fragment)
 
-        fragmentManager.beginTransaction().replace(viewId, fragment, fragmentProxy.tag).commit()
+        fragmentManager
+            .beginTransaction()
+            .setCustomAnimations(R.anim.abc_grow_fade_in_from_bottom, R.anim.abc_shrink_fade_out_from_bottom)
+            .replace(viewId, fragment, fragmentProxy.tag)
+            .commit()
+
         return fragment
     }
 

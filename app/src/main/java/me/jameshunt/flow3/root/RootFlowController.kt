@@ -5,6 +5,7 @@ import me.jameshunt.flow.*
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.PromiseDispatch
 import me.jameshunt.flow.promise.doAlso
+import me.jameshunt.flow3.FormFragment
 import me.jameshunt.flow3.TestFragment
 import me.jameshunt.flow3.root.GeneratedRootFlow.RootFlowState.*
 import me.jameshunt.flow3.splash.SplashFragment
@@ -13,6 +14,7 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
     private val splashFragmentProxy = proxy(SplashFragment::class.java)
+    private val formFragmentProxy = proxy(FormFragment::class.java)
 
     override fun onOne(state: One): Promise<FromOne> {
         return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, FromOne>(
@@ -29,8 +31,13 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
     }
 
     override fun onThree(state: Three): Promise<FromThree> {
-        Log.d("three", "going to 2")
-        return Promise(Two("no"))
+        return this.flow(fragmentProxy = this.formFragmentProxy, input = Unit).forResult<Unit, FromThree>(
+            onBack = { TODO() },
+            onComplete = {
+                // wrapper in a Promise in case you need to do some async stuff
+                Promise(Two("complete"))
+            }
+        )
     }
 
     override fun onFour(state: Four): Promise<FromFour> {
