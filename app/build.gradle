@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'flow-generate'
+
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -22,8 +24,6 @@ android {
     }
 }
 
-import me.jameshunt.generate.FlowGenerate
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -36,8 +36,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.2.0-alpha04'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0-alpha04'
-}
-
-task generate {
-    FlowGenerate.generate()
 }
