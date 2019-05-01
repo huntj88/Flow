@@ -18,7 +18,7 @@ class PumlParser {
         data class Data(val line: String) : LineType()
     }
 
-    fun parse(file: File): Set<State> {
+    fun parse(file: File): StateSet {
         val lines = file.readLines().mapNotNull {
             when {
                 it.isTransition() -> LineType.Transition(it)
@@ -30,10 +30,23 @@ class PumlParser {
         val dataLines = lines.mapNotNull { it as? LineType.Data }
         val transitionLines = lines.mapNotNull { it as? LineType.Transition }
 
-        return transitionLines
+        val states = transitionLines
             .identifyStates()
             .addVariables(dataLines)
             .addFrom(transitionLines)
+
+        val inputOutput = states.inputOutput()
+        return StateSet(states, inputOutput)
+    }
+
+    private fun Set<State>.inputOutput(): Pair<String, String> {
+        val input = this.first { it.from.contains("[*]") }.variables.firstOrNull()?.let {
+            it.split(" ").last()
+        }?: "Unit"
+        val output = this.firstOrNull { it.name == "Done" }?.variables?.firstOrNull()?.let {
+            it.split(" ").last()
+        }?: "Unit"
+        return Pair(input,output)
     }
 
     private fun List<LineType.Transition>.identifyStates(): Set<State> {

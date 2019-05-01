@@ -1,6 +1,7 @@
 @startuml
 
 Render : val data: me.jameshunt.flow3.summary.SummaryInput
+GatherData : val data: me.jameshunt.flow3.summary.SummaryInput
 
 [*] -> GatherData
 GatherData --> Render

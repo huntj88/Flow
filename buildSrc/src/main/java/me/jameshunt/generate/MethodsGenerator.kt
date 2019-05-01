@@ -12,12 +12,21 @@ class MethodsGenerator {
             }
     }
 
-    fun generateStart(flowName: String, states: Set<State>): String {
+    fun generateStart(
+        flowName: String,
+        states: Set<State>,
+        input: String
+    ): String {
         val from = states.firstOrNull { it.from.contains("[*]") }?.name!!
 
+        val impl = when(input == "Unit") {
+            true -> "to$from(${flowName}FlowState.$from)"
+            false -> "to$from(${flowName}FlowState.$from(state.input))"
+        }
+
         return """
-            final override fun onStart(state: InitialState<Unit>) {
-                to$from(${flowName}FlowState.$from)
+            final override fun onStart(state: InitialState<$input>) {
+                $impl
             }
         """
     }
