@@ -8,6 +8,10 @@ import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.TestFragment
 import me.jameshunt.flow3.portfolio.PortfolioFlowController
 
+data class SummaryInput(
+    val string: String
+)
+
 class SummaryFlowController(viewId: ViewId): GeneratedSummaryController(viewId) {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)

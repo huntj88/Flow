@@ -9,7 +9,7 @@ object FlowGenerate {
     fun generate() {
         println("sup")
 
-        val file = File("${Paths.get("").toAbsolutePath()}/app/src/main/java/me/jameshunt/flow3/summary/PillReminder.puml")
+        val file = File("${Paths.get("").toAbsolutePath()}/app/src/main/java/me/jameshunt/flow3/summary/SummaryGen.puml")
 //        val file = File("${Paths.get("").toAbsolutePath()}/app/src/main/java/me/jameshunt/flow3/summary/Summary.puml")
 
         FlowGenerator(file).generate()

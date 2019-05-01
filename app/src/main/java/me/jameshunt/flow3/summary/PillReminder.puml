@@ -1,6 +1,10 @@
 @startuml
 
-[*] --> CheckPillReminderOwner
+[*] --> Begin
+
+Begin --> CheckPillReminderOwner
+Begin --> Carousel
+
 CheckPillReminderOwner --> UserWarning
 CheckPillReminderOwner --> CheckReminderSettings
 CheckPillReminderOwner --> DownloadError

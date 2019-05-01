@@ -9,12 +9,7 @@ class FlowGenerator(private val file: File) {
 
         val flowName = file.nameWithoutExtension
 
-        val imports = """
-            import me.jameshunt.flow.FragmentFlowController
-            import me.jameshunt.flow.ViewId
-            import me.jameshunt.flow.promise.Promise
-            import me.jameshunt.flow.promise.then
-        """
+        val imports = ImportsGenerator().generate(states)
 
         val generatedClass =
             "abstract class Generated${flowName}Controller(viewId: ViewId): FragmentFlowController<Unit, Unit>(viewId) {"
@@ -41,6 +36,7 @@ class FlowGenerator(private val file: File) {
 data class State(
     val name: String,
     val variables: Set<String>,
+    val imports: Set<String>,
     val from: Set<String>
 )
 
