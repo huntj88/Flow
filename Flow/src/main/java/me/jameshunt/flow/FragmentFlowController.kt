@@ -59,7 +59,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
     }
 
     final override fun resume(currentState: State) {
-        (activeFragment as FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>?)?.let {
+        (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
             FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
                 viewId = this.viewId

@@ -14,8 +14,7 @@ abstract class FlowController<Input, Output> {
 
     protected lateinit var currentState: State
 
-    private val resultPromise: DeferredPromise<FlowResult<Output>> =
-        DeferredPromise()
+    private val resultPromise: DeferredPromise<FlowResult<Output>> = DeferredPromise()
 
     internal val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
@@ -23,9 +22,9 @@ abstract class FlowController<Input, Output> {
 
     protected abstract fun resume(currentState: State)
 
-    fun resume() = resume(currentState)
+    internal fun resume() = resume(currentState)
 
-    abstract fun handleBack()
+    internal abstract fun handleBack()
 
     protected fun BackState.onBack() {
         this@FlowController.resultPromise.resolve(FlowResult.Back)

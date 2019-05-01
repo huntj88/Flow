@@ -10,8 +10,11 @@ object FlowGenerate {
         println("sup")
 
         val file = File("${Paths.get("").toAbsolutePath()}/app/src/main/java/me/jameshunt/flow3/summary/SummaryGen.puml")
-//        val file = File("${Paths.get("").toAbsolutePath()}/app/src/main/java/me/jameshunt/flow3/summary/Summary.puml")
-
         FlowGenerator(file).generate()
+
+//        File("${Paths.get("").toAbsolutePath()}/app/src/main")
+//            .walk()
+//            .filter { it.extension == "puml" }
+//            .forEach { FlowGenerator(it).generate() }
     }
 }
