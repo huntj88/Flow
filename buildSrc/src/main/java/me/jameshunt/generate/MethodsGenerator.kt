@@ -60,7 +60,7 @@ class MethodsGenerator {
         fun String.handleBackAndDone(): String {
             return when(this) {
                 "Back" -> "it.onBack()"
-                "Done" -> "this@Generated${flowName}Controller.onDone(it.output as Output)"
+                "Done" -> "it.onDone()"
                 else -> "to$this(it)"
             }
         }

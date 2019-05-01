@@ -2,11 +2,13 @@
 
 Render : val data: me.jameshunt.flow3.summary.SummaryInput
 GatherData : val data: me.jameshunt.flow3.summary.SummaryInput
+Done : val output: me.jameshunt.flow3.summary.SummaryInput
 
 [*] -> GatherData
 GatherData --> Render
 Render --> Back
 Render -> CryptoSelected
 CryptoSelected -> Render
+CryptoSelected --> Done
 
 @enduml
