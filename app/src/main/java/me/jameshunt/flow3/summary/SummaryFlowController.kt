@@ -22,7 +22,6 @@ class SummaryFlowController(viewId: ViewId): GeneratedSummaryController(viewId) 
 
     override fun onRender(state: SummaryFlowState.Render): Promise<SummaryFlowState.FromRender> {
         return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, SummaryFlowState.FromRender>(
-            onBack = { TODO() },
             onComplete = {
                 // wrapper in a Promise in case you need to do some async stuff
                 Promise(SummaryFlowState.CryptoSelected)

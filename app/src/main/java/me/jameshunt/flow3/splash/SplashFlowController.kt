@@ -19,7 +19,6 @@ class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
         deepLinkData = state.deepLinkData
 
         return this.flow(fragmentProxy = splashFragmentProxy, input = Unit).forResult<Unit, FromSplash>(
-            onBack = { TODO() },
             onComplete = { Promise(Load) }
         )
     }

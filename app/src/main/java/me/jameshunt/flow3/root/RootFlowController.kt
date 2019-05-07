@@ -32,7 +32,6 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
 
     override fun onThree(state: Three): Promise<FromThree> {
         return this.flow(fragmentProxy = this.formFragmentProxy, input = Unit).forResult<Unit, FromThree>(
-            onBack = { TODO() },
             onComplete = {
                 // wrapper in a Promise in case you need to do some async stuff
                 Promise(Two("complete"))
@@ -44,7 +43,6 @@ class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
         return this.flow(fragmentProxy = this.splashFragmentProxy, input = Unit)
             .doAlso(on = PromiseDispatch.BACKGROUND) { Thread.sleep(1000) }
             .forResult<Unit, FromFour>(
-                onBack = { TODO() },
                 onComplete = {
                     // wrapper in a Promise in case you need to do some async stuff
                     Promise(One)
