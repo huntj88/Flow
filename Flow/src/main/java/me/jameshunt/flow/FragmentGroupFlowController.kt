@@ -10,8 +10,8 @@ abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.G
 
     abstract class GroupInput
 
-    object Back : BackState, State
-    data class Done<Output>(override val output: Output) : FragmentFlowController.DoneState<Output>, State
+    protected object Back : BackState, State
+    protected data class Done<Output>(override val output: Output) : FragmentFlowController.DoneState<Output>, State
 
     private var groupResult: Promise<Unit>?= null
 

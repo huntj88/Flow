@@ -14,10 +14,10 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
+        this.activeFragment = fragmentProxy
 
         return FlowManager.fragmentDisplayManager
             .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
-            .also { this.activeFragment = fragmentProxy }
             .flowForResult(input)
             .always { this.activeFragment = null }
     }
@@ -40,6 +40,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
         return flowController.launchFlow(input).always {
             childFlows.remove(flowController)
+            FlowManager.resumeActiveFlowControllers()
         }
     }
 

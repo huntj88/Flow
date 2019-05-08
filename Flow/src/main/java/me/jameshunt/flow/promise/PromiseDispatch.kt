@@ -24,13 +24,13 @@ enum class PromiseDispatch {
         }
 }
 
-fun <T, OUT> Promise<OUT>.thenp(on: PromiseDispatch? = null, execute: (OUT) -> Promise<T>): Promise<T> =
+fun <T, OUT> Promise<T>.thenp(on: PromiseDispatch? = null, execute: (T) -> Promise<OUT>): Promise<OUT> =
     this.thenp(on = (on ?: PromiseDispatch.MAIN).executor, execute = execute)
 
 fun <OUT> Promise<OUT>.recoverp(on: PromiseDispatch? = null, execute: (Exception) -> Promise<OUT>): Promise<OUT> =
     this.recoverp(on = (on ?: PromiseDispatch.MAIN).executor, execute = execute)
 
-fun <T, OUT> Promise<OUT>.then(on: PromiseDispatch? = null, execute: (OUT) -> T): Promise<T> =
+fun <T, OUT> Promise<T>.then(on: PromiseDispatch? = null, execute: (T) -> OUT): Promise<OUT> =
     this.then(on = (on ?: PromiseDispatch.MAIN).executor, execute = execute)
 
 fun <OUT> Promise<OUT>.recover(on: PromiseDispatch? = null, execute: (Exception) -> OUT): Promise<OUT> =

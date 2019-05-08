@@ -42,7 +42,7 @@ internal object FlowManager {
         rootFlow!!.handleBack()
     }
 
-    private fun resumeActiveFlowControllers() {
+    internal fun resumeActiveFlowControllers() {
         fragmentDisplayManager.removeAll(blocking = true)
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
