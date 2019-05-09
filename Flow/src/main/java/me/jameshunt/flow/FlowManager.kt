@@ -90,4 +90,15 @@ internal object FlowManager {
         }
     }
 
+    internal fun retryUncommittedFragmentTransactions() {
+        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
+
+        flowGroup
+            .childFlows
+            .map { it as FragmentFlowController<*, *> }
+            .map { it.getFragmentFlowLeaf() }
+            .mapNotNull { it.uncommittedTransaction }
+            .forEach { transaction -> transaction() }
+    }
+
 }

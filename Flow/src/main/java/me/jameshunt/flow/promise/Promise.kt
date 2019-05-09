@@ -4,6 +4,7 @@ package me.jameshunt.flow.promise
 
 // not actually my code
 
+import android.util.Log
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -56,6 +57,10 @@ open class Promise<OUT> {
             set(value) {
                 // can't set to pending
                 if (value is Status.Pending) { return }
+
+                if (field is Status.Resolved || field is Status.Rejected) {
+                    Log.w("Promise","Trying to resolve promise twice")
+                }
 
                 val list = synchronized(this) {
                     // can only be set once!

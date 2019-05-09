@@ -10,16 +10,33 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
+    internal var uncommittedTransaction: (() -> Unit)? = null
+        private set
+
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
         this.activeFragment = fragmentProxy
 
-        return FlowManager.fragmentDisplayManager
-            .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
-            .flowForResult(input)
-            .always { this.activeFragment = null }
+        return try {
+            FlowManager.fragmentDisplayManager
+                .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
+                .flowForResult(input)
+                .always { activeFragment = null }
+        } catch (e: IllegalStateException) { // from committing transaction after onSavedInstanceState
+            uncommittedTransaction = {
+                FlowManager.fragmentDisplayManager
+                    .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
+                    .flowForResult(input)
+                    .always {
+                        activeFragment = null
+                        uncommittedTransaction = null
+                    }
+            }
+
+            fragmentProxy.deferredPromise.promise
+        }
     }
 
     fun <GroupInput, GroupOutput, Controller> flowGroup(

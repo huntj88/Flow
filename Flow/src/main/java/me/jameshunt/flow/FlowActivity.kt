@@ -20,6 +20,11 @@ abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkD
         FlowManager.launchFlow(flowActivity = this)
     }
 
+    override fun onResume() {
+        super.onResume()
+        FlowManager.retryUncommittedFragmentTransactions()
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         this.fragmentDisplayManager.saveAll()
         super.onSaveInstanceState(outState)
