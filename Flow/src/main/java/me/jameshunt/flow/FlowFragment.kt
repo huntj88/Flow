@@ -14,7 +14,6 @@ abstract class FlowFragment<Input, Output> : Fragment() {
         this.input = input
 
         this.view?.let {
-            // will this ever be called here? TODO
             this.flowWillRun(input)
         }
 
