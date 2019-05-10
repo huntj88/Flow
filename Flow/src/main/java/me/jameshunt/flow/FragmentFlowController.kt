@@ -19,20 +19,18 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
     ): Promise<FlowResult<FragOutput>> {
         this.activeFragment = fragmentProxy
 
-        return try {
+        val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
             FlowManager.fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
                 .flowForResult(input)
                 .always { activeFragment = null }
+        }
+
+        return try {
+            showFragmentForResult()
         } catch (e: IllegalStateException) { // from committing transaction after onSavedInstanceState
             uncommittedTransaction = {
-                FlowManager.fragmentDisplayManager
-                    .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
-                    .flowForResult(input)
-                    .always {
-                        activeFragment = null
-                        uncommittedTransaction = null
-                    }
+                showFragmentForResult().always { uncommittedTransaction = null }
             }
 
             fragmentProxy.deferredPromise.promise

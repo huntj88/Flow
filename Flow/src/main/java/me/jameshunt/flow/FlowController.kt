@@ -35,8 +35,8 @@ abstract class FlowController<Input, Output> {
     }
 
     fun <Result, From> Promise<FlowResult<Result>>.forResult(
-        onBack: () -> Promise<From> = { TODO() },
-        onComplete: (Result) -> Promise<From> = { TODO() },
+        onBack: () -> Promise<From> = { throw NotImplementedError() },
+        onComplete: (Result) -> Promise<From> = { throw NotImplementedError() },
         onCatch: ((Exception) -> Promise<From>) = { throw it }
     ): Promise<From> = this
         .thenp {
