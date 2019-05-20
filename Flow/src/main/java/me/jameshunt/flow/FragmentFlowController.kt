@@ -27,8 +27,18 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         }
 
         return try {
-            showFragmentForResult()
-        } catch (e: IllegalStateException) { // from committing transaction after onSavedInstanceState
+            when(FlowManager.rootViewManager.isViewVisible(viewId)) {
+                true -> showFragmentForResult()
+                false -> {
+                    val fragmentName = fragmentProxy.clazz.simpleName
+                    val flowName = this::class.java.simpleName
+                    throw IllegalStateException("View does not exist for fragment: $fragmentName, in flow: $flowName")
+                }
+            }
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+            // from committing transaction after onSavedInstanceState,
+            // or view does not exist
             uncommittedTransaction = {
                 showFragmentForResult().always { uncommittedTransaction = null }
             }

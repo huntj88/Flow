@@ -1,6 +1,7 @@
 package me.jameshunt.flow
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 
@@ -16,4 +17,6 @@ class RootViewManager(private val activity: FlowActivity<*>) {
         flowRootLayout.addView(layout)
         return layout
     }
+
+    fun isViewVisible(viewId: ViewId): Boolean = activity.findViewById<View?>(viewId) != null
 }
