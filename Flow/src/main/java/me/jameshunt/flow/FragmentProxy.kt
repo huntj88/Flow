@@ -18,12 +18,16 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
 
     internal val tag = UUID.randomUUID().toString()
 
-    internal var deferredPromise = DeferredPromise<FlowResult<FragOutput>>()
-        private set
+    internal var input: FragInput? = null
+
+    internal var deferredPromise: DeferredPromise<FlowResult<FragOutput>> = DeferredPromise()
+        get() {
+            field = if(field.promise.isPending) field else DeferredPromise()
+            return field
+        }
 
     internal fun bind(fragment: FragmentType) {
         this.restoreState(fragment)
-        this.deferredPromise = if(this.deferredPromise.promise.isPending) this.deferredPromise else DeferredPromise()
         this.fragment = WeakReference(fragment)
         fragment.proxy = this
     }

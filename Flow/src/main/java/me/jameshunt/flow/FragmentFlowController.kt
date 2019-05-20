@@ -17,12 +17,12 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        this.activeFragment = fragmentProxy
+        this.activeFragment = fragmentProxy.also { it.input = input }
 
         val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
             FlowManager.fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
-                .flowForResult(input)
+                .flowForResult()
                 .always { activeFragment = null }
         }
 

@@ -7,11 +7,8 @@ abstract class FlowFragment<Input, Output> : Fragment() {
 
     var proxy: FragmentProxy<Input, Output, *>? = null
 
-    private var input: Input? = null
-
-    fun flowForResult(input: Input): Promise<FlowResult<Output>> {
-
-        this.input = input
+    fun flowForResult(): Promise<FlowResult<Output>> {
+        val input = proxy!!.input as Input
 
         this.view?.let {
             this.flowWillRun(input)
@@ -28,7 +25,7 @@ abstract class FlowFragment<Input, Output> : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        this.input?.let {
+        proxy!!.input?.let {
             this.flowWillRun(it)
         }
     }
