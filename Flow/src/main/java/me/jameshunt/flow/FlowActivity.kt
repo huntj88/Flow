@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 data class DeepLinkData(val intentBundle: Bundle?)
 
-abstract class FlowActivity<RootFlowController: FragmentFlowController<DeepLinkData, Unit>> : AppCompatActivity() {
+abstract class FlowActivity<RootFlowController : FragmentFlowController<DeepLinkData, Unit>> : AppCompatActivity() {
 
     internal val rootViewManager: RootViewManager by lazy { RootViewManager(this) }
     internal val fragmentDisplayManager = FragmentDisplayManager(this.supportFragmentManager)

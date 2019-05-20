@@ -11,14 +11,14 @@ internal object FlowManager {
     private val flowActivity: FlowActivity<*>
         get() = transientActivity.get() ?: throw IllegalStateException("Should never be null")
 
-    internal val fragmentDisplayManager: FragmentDisplayManager
-        get() = flowActivity.fragmentDisplayManager
-
-    internal val rootViewManager: RootViewManager
-        get() = flowActivity.rootViewManager
-
     private val shouldResume: Boolean
         get() = this.rootFlow != null
+
+    val fragmentDisplayManager: FragmentDisplayManager
+        get() = flowActivity.fragmentDisplayManager
+
+    val rootViewManager: RootViewManager
+        get() = flowActivity.rootViewManager
 
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
@@ -42,7 +42,7 @@ internal object FlowManager {
         rootFlow!!.handleBack()
     }
 
-    internal fun resumeActiveFlowControllers() {
+    fun resumeActiveFlowControllers() {
         fragmentDisplayManager.removeAll(blocking = true)
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
@@ -56,9 +56,20 @@ internal object FlowManager {
             .forEach { it.resume() }
     }
 
+    fun retryUncommittedFragmentTransactions() {
+        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
+
+        flowGroup
+            .childFlows
+            .map { it as FragmentFlowController<*, *> }
+            .map { it.getFragmentFlowLeaf() }
+            .mapNotNull { it.uncommittedTransaction }
+            .forEach { transaction -> transaction() }
+    }
+
     private fun FragmentGroupFlowController<*, *>.findGroup(): FragmentGroupFlowController<*, *> {
         return this.childFlows
-            .mapNotNull { it as? FragmentGroupFlowController<*,*> }
+            .mapNotNull { it as? FragmentGroupFlowController<*, *> }
             .firstOrNull()
             ?.findGroup()
 
@@ -80,7 +91,7 @@ internal object FlowManager {
                 ?.findGroup()
     }
 
-    //find group must be called before this
+    // find group must be called before this
     private tailrec fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *> {
         return when (this.childFlows.isEmpty()) {
             true -> this
@@ -89,16 +100,4 @@ internal object FlowManager {
             false -> (childFlows.first() as FragmentFlowController<*, *>).getFragmentFlowLeaf()
         }
     }
-
-    internal fun retryUncommittedFragmentTransactions() {
-        val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
-
-        flowGroup
-            .childFlows
-            .map { it as FragmentFlowController<*, *> }
-            .map { it.getFragmentFlowLeaf() }
-            .mapNotNull { it.uncommittedTransaction }
-            .forEach { transaction -> transaction() }
-    }
-
 }

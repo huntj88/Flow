@@ -1,4 +1,4 @@
-//package com.inmotionsoftware.promise
+// package com.inmotionsoftware.promise
 
 package me.jameshunt.flow.promise
 
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  */
 
-fun Executor?.dispatch(execute: () -> Unit ) {
+fun Executor?.dispatch(execute: () -> Unit) {
     this?.execute(execute) ?: execute()
 }
 
@@ -29,7 +29,7 @@ open class Promise<OUT> {
     sealed class Status<T> {
         class Resolved<T>(val value: T) : Status<T>()
         class Rejected<T>(val error: Exception) : Status<T>()
-        class Pending<T>: Status<T>()
+        class Pending<T> : Status<T>()
 
         val isRejected get() = this is Rejected<T>
         val isResolved get() = this is Resolved<T>
@@ -56,15 +56,19 @@ open class Promise<OUT> {
             get() = synchronized(this) { return field }
             set(value) {
                 // can't set to pending
-                if (value is Status.Pending) { return }
+                if (value is Status.Pending) {
+                    return
+                }
 
                 if (field is Status.Resolved || field is Status.Rejected) {
-                    Log.w("Promise","Trying to resolve promise twice")
+                    Log.w("Promise", "Trying to resolve promise twice")
                 }
 
                 val list = synchronized(this) {
                     // can only be set once!
-                    if (field !is Status.Pending) { return }
+                    if (field !is Status.Pending) {
+                        return
+                    }
                     field = value
 
                     if (this.children.size > 0) {
@@ -96,15 +100,20 @@ open class Promise<OUT> {
         }
 
         override fun resolve(result: Status<IN>) {
-            if (result is Status.Pending) { return }
+            if (result is Status.Pending) {
+                return
+            }
             executor.dispatch {
                 try {
                     when (result) {
                         is Status.Resolved -> this.status = execute(result.value)
                         is Status.Rejected -> this.status = recover(result.error)
                     }
-                } catch (t: Exception) { this.status = Status.Rejected(t)
-                } finally { always() }
+                } catch (t: Exception) {
+                    this.status = Status.Rejected(t)
+                } finally {
+                    always()
+                }
             }
         }
 
@@ -115,8 +124,10 @@ open class Promise<OUT> {
 
         override fun add(child: Input<OUT>) {
             val result = synchronized(this) {
-                when(this.status) {
-                    is Status.Pending -> { children.add(child); null }
+                when (this.status) {
+                    is Status.Pending -> {
+                        children.add(child); null
+                    }
                     is Status.Rejected -> this.status
                     is Status.Resolved -> this.status
                 }
@@ -126,12 +137,12 @@ open class Promise<OUT> {
         }
     }
 
-    private class BasicContinuation<T,RT>(
-                executor: Executor? = null,
-                val then: (T) -> RT,
-                val recover: ((Exception) -> RT)? = null,
-                val always: (() -> Unit)? = null)
-            : Continuation<T, RT>(executor) {
+    private class BasicContinuation<T, RT>(
+        executor: Executor? = null,
+        val then: (T) -> RT,
+        val recover: ((Exception) -> RT)? = null,
+        val always: (() -> Unit)? = null
+    ) : Continuation<T, RT>(executor) {
 
         override fun dispatch(value: T): RT = then(value)
         override fun recover(error: Exception): Status<RT> {
@@ -143,7 +154,9 @@ open class Promise<OUT> {
             }
         }
 
-        override fun always() { this.always?.invoke() }
+        override fun always() {
+            this.always?.invoke()
+        }
     }
 
     private class DeferredContinuation<T>(executor: Executor? = null) : Continuation<T, T>(executor) {
@@ -160,7 +173,6 @@ open class Promise<OUT> {
         // Should never get called...
         override fun dispatch(value: T): T = throw IllegalStateException()
     }
-
 
     private var output: Output<OUT>
 
@@ -222,7 +234,7 @@ open class Promise<OUT> {
         return this
     }
 
-    fun always(on: Executor?, execute: () -> Unit ): Promise<OUT> {
+    fun always(on: Executor?, execute: () -> Unit): Promise<OUT> {
         val cont =
             BasicContinuation<OUT, Unit>(
                 executor = on,
@@ -233,7 +245,7 @@ open class Promise<OUT> {
         return this
     }
 
-    fun asVoid(): Promise<Unit> = this.then(on=null) { Unit }
+    fun asVoid(): Promise<Unit> = this.then(on = null) { Unit }
 
     fun <T> thenp(on: Executor?, execute: (OUT) -> Promise<T>): Promise<T> {
         val outer = BasicContinuation(executor = on, then = execute)
@@ -269,22 +281,25 @@ open class Promise<OUT> {
     }
 
     companion object {
-        fun <T> deferred(): DeferredPromise<T> =
-            DeferredPromise()
+        fun <T> deferred(): DeferredPromise<T> = DeferredPromise()
+
         fun void(): Promise<Unit> = Promise(Unit)
 
         fun <T> join(promises: Iterable<Promise<T>>): Promise<Iterable<T>> {
-            return resolveParallel(promises).then(on=null) {
+            return resolveParallel(promises).then(on = null) {
                 // did we have an error?
                 for (result in it) {
-                    if (result is Result.Rejected) { throw result.error }
+                    if (result is Result.Rejected) {
+                        throw result.error
+                    }
                 }
                 it.map { (it as Result.Resolved).value }
             }
         }
 
         fun <T> resolveParallel(promises: Iterable<Promise<T>>): Promise<Iterable<Result<T>>> {
-            if (!promises.iterator().hasNext()) { return Promise(value = emptyList())
+            if (!promises.iterator().hasNext()) {
+                return Promise(value = emptyList())
             }
 
             return Promise { resolve, _ ->
@@ -316,7 +331,9 @@ open class Promise<OUT> {
         }
 
         fun <T> firstToResolve(promises: Iterable<Promise<T>>): Promise<T> {
-            if (!promises.iterator().hasNext()) { throw IllegalArgumentException("empty iterable") }
+            if (!promises.iterator().hasNext()) {
+                throw IllegalArgumentException("empty iterable")
+            }
 
             return Promise { resolve, reject ->
                 promises.forEach {
@@ -324,7 +341,7 @@ open class Promise<OUT> {
                         val status = it.output.status
                         val result = when (status) {
                             is Status.Pending -> Result.Rejected<T>(
-                               IllegalStateException()
+                                IllegalStateException()
                             )
                             is Status.Rejected -> Result.Rejected<T>(
                                 status.error
@@ -334,7 +351,7 @@ open class Promise<OUT> {
                             )
                         }
 
-                        when(result) {
+                        when (result) {
                             is Result.Resolved -> resolve(result.value)
                             is Result.Rejected -> reject(result.error)
                         }
@@ -345,20 +362,21 @@ open class Promise<OUT> {
 
         fun <T> resolveSerial(promises: Iterable<Promise<T>>): Promise<Iterable<T>> {
             val it = promises.iterator()
-            if (!it.hasNext()) { return Promise(emptyList())
+            if (!it.hasNext()) {
+                return Promise(emptyList())
             }
 
             val rt = mutableListOf<T>()
             var prev = it.next()
             while (it.hasNext()) {
                 val next = it.next()
-                prev = prev.thenp(on=null) {
+                prev = prev.thenp(on = null) {
                     rt.add(it)
                     next
                 }
             }
 
-            return prev.then(on=null) {
+            return prev.then(on = null) {
                 rt.add(it)
                 rt
             }
@@ -387,7 +405,7 @@ class DeferredPromise<T> {
     }
 
     fun reject(error: Exception) {
-        this._reject?.let{ it(error) }
+        this._reject?.let { it(error) }
     }
 }
 

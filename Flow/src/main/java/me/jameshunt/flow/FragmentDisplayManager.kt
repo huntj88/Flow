@@ -3,10 +3,11 @@ package me.jameshunt.flow
 import androidx.fragment.app.FragmentManager
 import me.jameshunt.flow.util.logFlow
 
-class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
+internal class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
 
     fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> show(
-        fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>, viewId: ViewId
+        fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
+        viewId: ViewId
     ): FragmentType {
         (fragmentManager.findFragmentById(viewId) as? FlowFragment<*, *>)?.proxy?.saveState()
 
@@ -33,7 +34,6 @@ class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
         activeFragment?.fragment?.get()
             ?.let { fragmentManager.beginTransaction().remove(it).commit() }
             ?: logFlow("no active fragment")
-
     }
 
     fun removeAll(blocking: Boolean = false) {

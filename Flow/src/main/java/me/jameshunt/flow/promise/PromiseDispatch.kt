@@ -2,7 +2,8 @@ package me.jameshunt.flow.promise
 
 import android.os.Handler
 import android.os.Looper
-import java.util.concurrent.*
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 /**
  * Created by bghoward on 9/1/17.

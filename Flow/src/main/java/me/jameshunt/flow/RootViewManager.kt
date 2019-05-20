@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 
 typealias LayoutId = Int
 
-class RootViewManager(private val activity: FlowActivity<*>) {
+internal class RootViewManager(private val activity: FlowActivity<*>) {
 
     fun setNewRoot(layoutId: LayoutId): ViewGroup {
         val flowRootLayout = activity.findViewById<FrameLayout>(R.id.flowRootLayout)

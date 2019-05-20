@@ -13,13 +13,13 @@ abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.G
     protected object Back : BackState, State
     protected data class Done<Output>(override val output: Output) : FragmentFlowController.DoneState<Output>, State
 
-    private var groupResult: Promise<Unit>?= null
+    private var groupResult: Promise<Unit>? = null
 
     final override fun onStart(state: InitialState<Input>) {
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
         setupGroup(layout)
 
-        if(groupResult != null) return
+        if (groupResult != null) return
 
         groupResult = startFlowInGroup(state.input).then {
             when (it) {

@@ -3,7 +3,7 @@ package me.jameshunt.flow
 import androidx.fragment.app.Fragment
 import me.jameshunt.flow.promise.DeferredPromise
 import java.lang.ref.WeakReference
-import java.util.*
+import java.util.UUID
 
 fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> FragmentFlowController<*, *>
         .proxy(clazz: Class<FragmentType>): FragmentProxy<FragInput, FragOutput, FragmentType> = FragmentProxy(clazz)
@@ -22,7 +22,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
 
     internal var deferredPromise: DeferredPromise<FlowResult<FragOutput>> = DeferredPromise()
         get() {
-            field = if(field.promise.isPending) field else DeferredPromise()
+            field = if (field.promise.isPending) field else DeferredPromise()
             return field
         }
 

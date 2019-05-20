@@ -1,6 +1,9 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.*
+import me.jameshunt.flow.promise.thenp
+import me.jameshunt.flow.promise.recoverp
+import me.jameshunt.flow.promise.DeferredPromise
+import me.jameshunt.flow.promise.Promise
 
 typealias ViewId = Int
 

@@ -1,6 +1,7 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.*
+import me.jameshunt.flow.promise.Promise
+import me.jameshunt.flow.promise.always
 
 abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
 
@@ -27,7 +28,7 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         }
 
         return try {
-            when(FlowManager.rootViewManager.isViewVisible(viewId)) {
+            when (FlowManager.rootViewManager.isViewVisible(viewId)) {
                 true -> showFragmentForResult()
                 false -> {
                     val fragmentName = fragmentProxy.clazz.simpleName
