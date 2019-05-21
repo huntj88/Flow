@@ -1,11 +1,10 @@
 package me.jameshunt.flow3.root
 
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.ViewId
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.then
 
-abstract class GeneratedRootFlow(viewId: ViewId) : FragmentFlowController<Unit, Unit>(viewId) {
+abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
     protected sealed class RootFlowState: State {
         interface FromOne // can go from One to whichever states implemented this

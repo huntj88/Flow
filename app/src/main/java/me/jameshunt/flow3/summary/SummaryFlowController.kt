@@ -1,7 +1,6 @@
 package me.jameshunt.flow3.summary
 
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.ViewId
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.then
 import me.jameshunt.flow.proxy
@@ -12,7 +11,7 @@ data class SummaryInput(
     val string: String
 )
 
-class SummaryFlowController(viewId: ViewId): GeneratedSummaryController(viewId) {
+class SummaryFlowController: GeneratedSummaryController() {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
 
@@ -39,7 +38,7 @@ class SummaryFlowController(viewId: ViewId): GeneratedSummaryController(viewId) 
     }
 }
 
-abstract class GeneratedSummaryController(viewId: ViewId): FragmentFlowController<Unit, Unit>(viewId) {
+abstract class GeneratedSummaryController: FragmentFlowController<Unit, Unit>() {
 
     protected sealed class SummaryFlowState : State {
         interface FromGatherData

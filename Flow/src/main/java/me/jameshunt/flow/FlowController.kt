@@ -5,8 +5,6 @@ import me.jameshunt.flow.promise.recoverp
 import me.jameshunt.flow.promise.DeferredPromise
 import me.jameshunt.flow.promise.Promise
 
-typealias ViewId = Int
-
 abstract class FlowController<Input, Output> {
 
     interface State

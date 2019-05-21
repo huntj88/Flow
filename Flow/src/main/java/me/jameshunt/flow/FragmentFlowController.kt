@@ -3,11 +3,15 @@ package me.jameshunt.flow
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.always
 
-abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId) : FlowController<Input, Output>() {
+typealias ViewId = Int
+
+abstract class FragmentFlowController<Input, Output> : FlowController<Input, Output>() {
 
     interface DoneState<Output> {
         val output: Output
     }
+
+    internal var viewId: ViewId = 0 // is only set once at the beginning or not at all
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
@@ -74,9 +78,10 @@ abstract class FragmentFlowController<Input, Output>(private val viewId: ViewId)
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller
-            .getDeclaredConstructor(ViewId::class.java)
-            .newInstance(this@FragmentFlowController.viewId)
+        val flowController = controller.newInstance().apply {
+            // apply same viewId to child
+            this.viewId = this@FragmentFlowController.viewId
+        }
 
         childFlows.add(flowController)
 

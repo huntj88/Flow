@@ -1,15 +1,16 @@
 package me.jameshunt.flow3.splash
 
-import me.jameshunt.flow.*
+import me.jameshunt.flow.DeepLinkData
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.PromiseDispatch
 import me.jameshunt.flow.promise.then
+import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.ViewPagerGroupController
 import me.jameshunt.flow3.root.RootFlowController
 import me.jameshunt.flow3.splash.GeneratedSplashController.SplashFlowState.*
 import me.jameshunt.flow3.summary.SummaryFlowController
 
-class SplashFlowController(viewId: ViewId): GeneratedSplashController(viewId) {
+class SplashFlowController: GeneratedSplashController() {
 
     private val splashFragmentProxy = proxy(SplashFragment::class.java)
 

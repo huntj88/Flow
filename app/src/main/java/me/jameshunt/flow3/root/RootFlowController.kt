@@ -1,16 +1,15 @@
 package me.jameshunt.flow3.root
 
-import android.util.Log
-import me.jameshunt.flow.*
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.PromiseDispatch
 import me.jameshunt.flow.promise.doAlso
+import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.FormFragment
 import me.jameshunt.flow3.TestFragment
 import me.jameshunt.flow3.root.GeneratedRootFlow.RootFlowState.*
 import me.jameshunt.flow3.splash.SplashFragment
 
-class RootFlowController(viewId: ViewId) : GeneratedRootFlow(viewId) {
+class RootFlowController : GeneratedRootFlow() {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
     private val splashFragmentProxy = proxy(SplashFragment::class.java)

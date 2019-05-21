@@ -2,11 +2,10 @@ package me.jameshunt.flow3.splash
 
 import me.jameshunt.flow.DeepLinkData
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.ViewId
 import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.then
 
-abstract class GeneratedSplashController(viewId: ViewId): FragmentFlowController<DeepLinkData, Unit>(viewId) {
+abstract class GeneratedSplashController: FragmentFlowController<DeepLinkData, Unit>() {
 
     protected sealed class SplashFlowState: State {
         interface FromSplash

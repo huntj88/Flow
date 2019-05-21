@@ -38,9 +38,9 @@ abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.G
         viewId: ViewId,
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller
-            .getDeclaredConstructor(ViewId::class.java)
-            .newInstance(viewId)
+        val flowController = controller.newInstance().apply {
+            (this as FragmentFlowController<NewInput, NewOutput>).viewId = viewId
+        }
 
         childFlows.add(flowController)
 

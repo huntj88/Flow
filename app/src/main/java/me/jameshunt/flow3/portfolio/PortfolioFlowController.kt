@@ -8,7 +8,7 @@ import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.TestFragment
 
 
-class PortfolioFlowController(viewId: ViewId): GeneratedPortfolioController(viewId) {
+class PortfolioFlowController: GeneratedPortfolioController() {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
 
@@ -28,7 +28,7 @@ class PortfolioFlowController(viewId: ViewId): GeneratedPortfolioController(view
     }
 }
 
-abstract class GeneratedPortfolioController(viewId: ViewId): FragmentFlowController<Unit, Unit>(viewId) {
+abstract class GeneratedPortfolioController: FragmentFlowController<Unit, Unit>() {
 
     protected sealed class PortfolioFlowState : State {
         interface FromGatherData
