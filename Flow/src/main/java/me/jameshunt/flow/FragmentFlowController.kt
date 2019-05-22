@@ -11,7 +11,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         val output: Output
     }
 
-    internal var viewId: ViewId = 0 // is only set once at the beginning or not at all
+    internal var viewId: ViewId = 0 // is only set once at the beginning
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 

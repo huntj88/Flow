@@ -35,10 +35,11 @@ abstract class FlowController<Input, Output> {
         this.resultPromise.resolve(FlowResult.Completed(output))
     }
 
-    fun <Result, From> Promise<FlowResult<Result>>.forResult(
-        onBack: () -> Promise<From> = { throw NotImplementedError() },
-        onComplete: (Result) -> Promise<From> = { throw NotImplementedError() },
-        onCatch: ((Exception) -> Promise<From>) = { throw it }
+    // Inlining this gives better errors about where the error happened
+    inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
+        crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
+        crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
+        crossinline onCatch: ((Exception) -> Promise<From>) = { throw it }
     ): Promise<From> = this
         .thenp {
             when (it) {
