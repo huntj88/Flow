@@ -80,7 +80,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
     ): Promise<FlowResult<NewOutput>> {
         val flowController = controller.newInstance().apply {
             // apply same viewId to child
-            this.viewId = this@FragmentFlowController.viewId
+            this@apply.viewId = this@FragmentFlowController.viewId
         }
 
         childFlows.add(flowController)
