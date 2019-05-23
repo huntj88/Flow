@@ -5,10 +5,10 @@ import me.jameshunt.flow.promise.DeferredPromise
 import java.lang.ref.WeakReference
 import java.util.UUID
 
-fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> FragmentFlowController<*, *>
+fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> FragmentFlowController<*, *>
         .proxy(clazz: Class<FragmentType>): FragmentProxy<FragInput, FragOutput, FragmentType> = FragmentProxy(clazz)
 
-class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>>(
+class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>>(
     internal val clazz: Class<FragmentType>
 ) {
 
@@ -34,6 +34,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
 
     internal fun saveState() {
         this.fragment?.get()?.let {
+            it as Fragment
             // We can't save the state of a Fragment that isn't added to a FragmentManager.
             if (it.isAdded) {
                 this.state = it.fragmentManager?.saveFragmentInstanceState(it)
@@ -43,6 +44,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowFragment<FragInput
 
     private fun restoreState(fragment: FragmentType) {
         this.state?.let {
+            fragment as Fragment
             // Can't set initial state if already added
             if (!fragment.isAdded) {
                 fragment.setInitialSavedState(this.state)

@@ -18,7 +18,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
 
-    fun <FragInput, FragOutput, FragmentType : FlowFragment<FragInput, FragOutput>> flow(
+    fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
