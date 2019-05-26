@@ -49,7 +49,7 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
 
     fun saveAll() {
         fragmentManager.fragments.forEach {
-            (it as FlowFragment<*, *>).proxy!!.saveState()
+            (it as FlowUI<*, *>).proxy!!.saveState()
         }
     }
 
