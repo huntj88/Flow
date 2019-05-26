@@ -61,13 +61,16 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
 
     override fun onResume() {
         super.onResume()
-        proxy!!.input?.let {
+
+        // this should be optional unlike normal fragment
+        proxy?.input?.let {
             this.flowWillRun(it)
         }
     }
 
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
-        proxy?.onBack()
+        // TODO
+//        proxy?.onBack()
     }
 }

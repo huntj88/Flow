@@ -18,7 +18,7 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
 
         fragmentProxy.bind(fragment)
 
-        return when(fragment) {
+        return when (fragment) {
             is DialogFragment -> showDialog(fragment, fragmentProxy.tag)
             is Fragment -> showFragment(fragment, viewId, fragmentProxy.tag)
             else -> throw NotImplementedError()
@@ -43,7 +43,7 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
         dialogFragment: FragmentType,
         tag: String
     ): FragmentType {
-        (dialogFragment as? DialogFragment)?.show(fragmentManager, tag)
+        (dialogFragment as DialogFragment).show(fragmentManager, tag)
         return dialogFragment
     }
 
@@ -72,5 +72,10 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
                     false -> it.commit()
                 }
             }
+    }
+
+    fun getVisibleFragmentBehindDialog(viewId: ViewId): FragmentProxy<*, *, *>? {
+        // needed because when a dialog fragment is active, we need to know what the fragment behind the dialog is
+        return (fragmentManager.findFragmentById(viewId) as? FlowFragment<*, *>)?.proxy
     }
 }

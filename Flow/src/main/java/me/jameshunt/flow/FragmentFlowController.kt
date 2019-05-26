@@ -15,6 +15,8 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
+    private var activeDialogFragment: FragmentProxy<*, *, *>? = null
+
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
 
@@ -22,13 +24,27 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        this.activeFragment = fragmentProxy.also { it.input = input }
+        val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
+
+        when(isDialog) {
+            true -> {
+                activeDialogFragment = fragmentProxy.also { it.input = input }
+                activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentBehindDialog(viewId)
+            }
+            false -> activeFragment = fragmentProxy.also { it.input = input }
+        }
 
         val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
             FlowManager.fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
                 .flowForResult()
-                .always { activeFragment = null }
+                .always {
+                    activeFragment = null
+
+                    if(isDialog) {
+                        activeDialogFragment = null
+                    }
+                }
         }
 
         return try {
@@ -91,7 +107,15 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
     }
 
     final override fun resume(currentState: State) {
-        (activeFragment as? FragmentProxy<Any?, Any?, FlowUI<Any?, Any?>>)?.let {
+        (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
+            FlowManager.fragmentDisplayManager.show(
+                fragmentProxy = it,
+                viewId = this.viewId
+            )
+        }
+
+        (activeDialogFragment as? FragmentProxy<Any?, Any?, FlowDialogFragment<Any?, Any?>>)?.let {
+            it.fragment = null
             FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
                 viewId = this.viewId

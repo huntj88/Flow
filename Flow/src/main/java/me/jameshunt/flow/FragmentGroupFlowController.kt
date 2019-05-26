@@ -5,8 +5,9 @@ import me.jameshunt.flow.promise.Promise
 import me.jameshunt.flow.promise.always
 import me.jameshunt.flow.promise.then
 
-abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.GroupInput, Output>(private val layoutId: LayoutId) :
-    FlowController<Input, Output>() {
+abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.GroupInput, Output>(
+    private val layoutId: LayoutId
+) : FlowController<Input, Output>() {
 
     abstract class GroupInput
 
