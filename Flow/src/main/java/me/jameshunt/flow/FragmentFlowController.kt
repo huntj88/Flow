@@ -115,7 +115,10 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         }
 
         (activeDialogFragment as? FragmentProxy<Any?, Any?, FlowDialogFragment<Any?, Any?>>)?.let {
+            // DialogFragments are kept around in FragmentManager memory longer,
+            // so null out the instance so it won't try and show the instance from the old activity
             it.fragment = null
+
             FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
                 viewId = this.viewId

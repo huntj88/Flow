@@ -70,7 +70,11 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
 
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
-        // TODO
-//        proxy?.onBack()
+
+        // DialogFragments are kept around in FragmentManager memory longer,
+        // don't let it resolve if fragment is from old activity
+        if(proxy?.fragment?.get() == this) {
+            proxy?.onBack()
+        }
     }
 }
