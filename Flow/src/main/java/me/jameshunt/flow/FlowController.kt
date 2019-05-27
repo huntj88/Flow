@@ -1,9 +1,9 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.thenp
-import me.jameshunt.flow.promise.recoverp
-import me.jameshunt.flow.promise.DeferredPromise
-import me.jameshunt.flow.promise.Promise
+import com.inmotionsoftware.promisekt.DeferredPromise
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.recover
+import com.inmotionsoftware.promisekt.thenMap
 
 abstract class FlowController<Input, Output> {
 
@@ -39,15 +39,15 @@ abstract class FlowController<Input, Output> {
     inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
         crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
         crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
-        crossinline onCatch: ((Exception) -> Promise<From>) = { throw it }
+        crossinline onCatch: ((Throwable) -> Promise<From>) = { throw it }
     ): Promise<From> = this
-        .thenp {
+        .thenMap {
             when (it) {
                 is FlowResult.Back -> onBack()
                 is FlowResult.Completed -> onComplete(it.data)
             }
         }
-        .recoverp { onCatch(it) }
+        .recover { onCatch(it) }
 
     // internal to this instance use
     internal fun launchFlow(input: Input): Promise<FlowResult<Output>> {

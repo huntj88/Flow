@@ -1,7 +1,6 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.always
-import me.jameshunt.flow.promise.catch
+import com.inmotionsoftware.promisekt.catch
 import java.lang.ref.WeakReference
 
 internal object FlowManager {
@@ -29,7 +28,7 @@ internal object FlowManager {
                 rootFlow
                     .launchFlow(flowActivity.getInitialArgs())
                     .catch { it.printStackTrace() }
-                    .always {
+                    .finally {
                         this.rootFlow = null
                         this.flowActivity.onFlowFinished()
                         println("flow completed")

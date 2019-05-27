@@ -5,10 +5,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.features.race
 import me.jameshunt.flow.FragmentFlowController
 import me.jameshunt.flow.FragmentGroupFlowController
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.firstToResolve
 
 class ViewPagerGroupController :
     FragmentGroupFlowController<ViewPagerGroupController.InternalInput, Unit>(R.layout.group_view_pager) {
@@ -84,9 +84,9 @@ class ViewPagerGroupController :
         val pageOne = this.flow(controller = groupInput.pageOne, viewId = R.id.groupPagerOne, input = Unit)
         val pageTwo = this.flow(controller = groupInput.pageTwo, viewId = R.id.groupPagerTwo, input = Unit)
 
-        return listOf(pageZero, pageOne, pageTwo).firstToResolve().forResult<Unit, State>(
-            onBack = { Promise(Back) },
-            onComplete = { Promise(Done(it)) }
+        return race(pageZero, pageOne, pageTwo).forResult<Unit, State>(
+            onBack = { Promise.value(Back) },
+            onComplete = { Promise.value(Done(it)) }
         )
     }
 }

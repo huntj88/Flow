@@ -1,9 +1,9 @@
 package me.jameshunt.flow3.splash
 
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.map
 import me.jameshunt.flow.DeepLinkData
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.then
 
 abstract class GeneratedSplashController: FragmentFlowController<DeepLinkData, Unit>() {
 
@@ -30,7 +30,7 @@ abstract class GeneratedSplashController: FragmentFlowController<DeepLinkData, U
 
     private fun toSplash(state: SplashFlowState.Splash) {
         currentState = state
-        onSplash(state).then {
+        onSplash(state).map {
             when(it) {
                 is SplashFlowState.Load -> toLoad(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
@@ -40,7 +40,7 @@ abstract class GeneratedSplashController: FragmentFlowController<DeepLinkData, U
 
     private fun toLoad(state: SplashFlowState.Load) {
         currentState = state
-        onLoad(state).then {
+        onLoad(state).map {
             when(it) {
                 is SplashFlowState.FinishedLoading ->toFinishedLoading(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
@@ -50,7 +50,7 @@ abstract class GeneratedSplashController: FragmentFlowController<DeepLinkData, U
 
     private fun toFinishedLoading(state: SplashFlowState.FinishedLoading) {
         currentState = state
-        onFinishedLoading(state).then {
+        onFinishedLoading(state).map {
             when(it) {
                 is SplashFlowState.Done -> it.onDone()
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")

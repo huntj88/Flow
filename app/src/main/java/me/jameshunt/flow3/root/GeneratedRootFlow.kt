@@ -1,8 +1,8 @@
 package me.jameshunt.flow3.root
 
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.map
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.then
 
 abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
@@ -31,7 +31,7 @@ abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
     private fun toOne(state: RootFlowState.One) {
         currentState = state
-        onOne(state).then {
+        onOne(state).map {
             when(it) {
                 is RootFlowState.Three -> toThree(it)
                 is RootFlowState.Four -> toFour(it)
@@ -42,7 +42,7 @@ abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
     private fun toTwo(state: RootFlowState.Two) {
         currentState = state
-        onTwo(state).then {
+        onTwo(state).map {
             when(it) {
                 is RootFlowState.Four -> toFour(it)
                 is RootFlowState.Back -> it.onBack()
@@ -53,7 +53,7 @@ abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
     private fun toThree(state: RootFlowState.Three) {
         currentState = state
-        onThree(state).then {
+        onThree(state).map {
             when(it) {
                 is RootFlowState.Two -> toTwo(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
@@ -63,7 +63,7 @@ abstract class GeneratedRootFlow : FragmentFlowController<Unit, Unit>() {
 
     private fun toFour(state: RootFlowState.Four) {
         currentState = state
-        onFour(state).then {
+        onFour(state).map {
             when(it) {
                 is RootFlowState.One -> toOne(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")

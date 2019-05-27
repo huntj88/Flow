@@ -1,11 +1,12 @@
 package me.jameshunt.flow3.summary
 
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.map
 import me.jameshunt.flow.FragmentFlowController
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.then
 import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.TestFragment
 import me.jameshunt.flow3.portfolio.PortfolioFlowController
+import me.jameshunt.flow3.summary.GeneratedSummaryController.SummaryFlowState.*
 
 data class SummaryInput(
     val string: String
@@ -15,20 +16,20 @@ class SummaryFlowController: GeneratedSummaryController() {
 
     private val testFragmentProxy = proxy(TestFragment::class.java)
 
-    override fun onGatherData(state: SummaryFlowState.GatherData): Promise<SummaryFlowState.FromGatherData> {
-        return Promise(SummaryFlowState.Render)
+    override fun onGatherData(state: GatherData): Promise<FromGatherData> {
+        return Promise.value(Render)
     }
 
-    override fun onRender(state: SummaryFlowState.Render): Promise<SummaryFlowState.FromRender> {
-        return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, SummaryFlowState.FromRender>(
+    override fun onRender(state: Render): Promise<FromRender> {
+        return this.flow(fragmentProxy = this.testFragmentProxy, input = "wow").forResult<Unit, FromRender>(
             onComplete = {
                 // wrapper in a Promise in case you need to do some async stuff
-                Promise(SummaryFlowState.CryptoSelected)
+                Promise.value(CryptoSelected)
             }
         )
     }
 
-    override fun onCryptoSelected(state: SummaryFlowState.CryptoSelected): Promise<SummaryFlowState.FromCryptoSelected> {
+    override fun onCryptoSelected(state: CryptoSelected): Promise<FromCryptoSelected> {
         return this.flow(controller = PortfolioFlowController::class.java, input = Unit).forResult(
             onBack = { TODO() },
             onComplete = {
@@ -52,37 +53,37 @@ abstract class GeneratedSummaryController: FragmentFlowController<Unit, Unit>() 
         object CryptoSelected : SummaryFlowState(), FromRender
     }
 
-    protected abstract fun onGatherData(state: SummaryFlowState.GatherData): Promise<SummaryFlowState.FromGatherData>
-    protected abstract fun onRender(state: SummaryFlowState.Render): Promise<SummaryFlowState.FromRender>
-    protected abstract fun onCryptoSelected(state: SummaryFlowState.CryptoSelected): Promise<SummaryFlowState.FromCryptoSelected>
+    protected abstract fun onGatherData(state: GatherData): Promise<FromGatherData>
+    protected abstract fun onRender(state: Render): Promise<FromRender>
+    protected abstract fun onCryptoSelected(state: CryptoSelected): Promise<FromCryptoSelected>
 
     final override fun onStart(state: InitialState<Unit>) {
-        toGatherData(SummaryFlowState.GatherData)
+        toGatherData(GatherData)
     }
 
-    private fun toGatherData(state: SummaryFlowState.GatherData) {
+    private fun toGatherData(state: GatherData) {
         currentState = state
-        onGatherData(state).then {
+        onGatherData(state).map {
             when(it) {
-                is SummaryFlowState.Render -> toRender(it)
+                is Render -> toRender(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
 
-    private fun toRender(state: SummaryFlowState.Render) {
+    private fun toRender(state: Render) {
         currentState = state
-        onRender(state).then {
+        onRender(state).map {
             when(it) {
-                is SummaryFlowState.CryptoSelected-> toCryptoSelected(it)
+                is CryptoSelected-> toCryptoSelected(it)
                 else -> throw IllegalStateException("Illegal transition from: $state, to: $it")
             }
         }
     }
 
-    private fun toCryptoSelected(state: SummaryFlowState.CryptoSelected) {
+    private fun toCryptoSelected(state: CryptoSelected) {
         currentState = state
-        onCryptoSelected(state).then {
+        onCryptoSelected(state).map {
 //            when(it) {
 ////                is SummaryFlowState.Ba-> toThree(it)
 //                else -> throw IllegalStateException("Illegal transition from: $state, to: $it")

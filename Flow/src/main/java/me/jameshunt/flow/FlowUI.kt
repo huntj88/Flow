@@ -3,7 +3,7 @@ package me.jameshunt.flow
 import android.content.DialogInterface
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import me.jameshunt.flow.promise.Promise
+import com.inmotionsoftware.promisekt.Promise
 
 interface FlowUI<Input, Output> {
     var proxy: FragmentProxy<Input, Output, *>?

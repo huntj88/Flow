@@ -1,7 +1,8 @@
 package me.jameshunt.flow
 
 import androidx.fragment.app.Fragment
-import me.jameshunt.flow.promise.DeferredPromise
+import com.inmotionsoftware.promisekt.DeferredPromise
+import com.inmotionsoftware.promisekt.isPending
 import java.lang.ref.WeakReference
 import java.util.UUID
 

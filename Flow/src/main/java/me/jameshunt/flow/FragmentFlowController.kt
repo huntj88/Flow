@@ -1,7 +1,7 @@
 package me.jameshunt.flow
 
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.always
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.ensure
 
 typealias ViewId = Int
 
@@ -38,7 +38,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
             FlowManager.fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
                 .flowForResult()
-                .always {
+                .ensure {
                     activeFragment = null
 
                     if(isDialog) {
@@ -61,7 +61,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
             // from committing transaction after onSavedInstanceState,
             // or view does not exist
             uncommittedTransaction = {
-                showFragmentForResult().always { uncommittedTransaction = null }
+                showFragmentForResult().ensure { uncommittedTransaction = null }
             }
 
             fragmentProxy.deferredPromise.promise
@@ -84,7 +84,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(input).always {
+        return flowController.launchFlow(input).ensure {
             childFlows.remove(flowController)
             FlowManager.resumeActiveFlowControllers()
         }
@@ -101,7 +101,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(input).always {
+        return flowController.launchFlow(input).ensure {
             childFlows.remove(flowController)
         }
     }

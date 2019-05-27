@@ -1,9 +1,9 @@
 package me.jameshunt.flow
 
 import android.view.ViewGroup
-import me.jameshunt.flow.promise.Promise
-import me.jameshunt.flow.promise.always
-import me.jameshunt.flow.promise.then
+import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.ensure
+import com.inmotionsoftware.promisekt.map
 
 abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.GroupInput, Output>(
     private val layoutId: LayoutId
@@ -22,7 +22,7 @@ abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.G
 
         if (groupResult != null) return
 
-        groupResult = startFlowInGroup(state.input).then {
+        groupResult = startFlowInGroup(state.input).map {
             when (it) {
                 is Back -> it.onBack()
                 is Done<*> -> this@FragmentGroupFlowController.onDone(it.output as Output)
@@ -45,7 +45,7 @@ abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.G
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(input).always {
+        return flowController.launchFlow(input).ensure {
             childFlows.remove(flowController)
         }
     }
