@@ -1,9 +1,15 @@
 package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.catch
+import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
 
 internal object FlowManager {
+
+    init {
+        DispatchExecutor.setMainExecutor()
+    }
+
     private var rootFlow: FlowController<*, Unit>? = null
 
     private lateinit var transientActivity: WeakReference<FlowActivity<*>>
