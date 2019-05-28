@@ -41,7 +41,7 @@ class RootFlowController : GeneratedRootFlow() {
 
     override fun onFour(state: Four): Promise<FromFour> {
         return this.flow(fragmentProxy = this.splashFragmentProxy, input = Unit)
-            .ensure(on = DispatchExecutor.global) { Thread.sleep(1000) }
+            .ensure(on = DispatchExecutor.background) { Thread.sleep(1000) }
             .forResult<Unit, FromFour>(
                 onComplete = {
                     // wrapper in a Promise in case you need to do some async stuff

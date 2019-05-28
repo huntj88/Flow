@@ -5,11 +5,9 @@ import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
 import com.inmotionsoftware.promisekt.map
 
-abstract class FragmentGroupFlowController<Input : FragmentGroupFlowController.GroupInput, Output>(
+abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId
 ) : FlowController<Input, Output>() {
-
-    abstract class GroupInput
 
     protected object Back : BackState, State
     protected data class Done<Output>(override val output: Output) : FragmentFlowController.DoneState<Output>, State
@@ -65,8 +63,7 @@ fun <GroupInput, GroupOutput, Controller> FlowController<*, *>.flowGroup(
     controller: Class<Controller>,
     input: GroupInput
 ): Promise<FlowResult<GroupOutput>>
-        where GroupInput : FragmentGroupFlowController.GroupInput,
-              Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
+        where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
 
     // remove all the fragments from this flowController before starting the next FlowController
     // (state will still be saved when they get back)

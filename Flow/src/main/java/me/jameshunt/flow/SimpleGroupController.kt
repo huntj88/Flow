@@ -21,7 +21,7 @@ class SimpleGroupController<Input, Output> :
     class SimpleGroupInput<Input, Output>(
         val flow: Class<FragmentFlowController<Input, Output>>,
         val input: Input
-    ) : FragmentGroupFlowController.GroupInput()
+    )
 
     override fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): Promise<State> {
         return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).forResult<Output, State>(

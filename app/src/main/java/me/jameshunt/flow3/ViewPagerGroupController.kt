@@ -34,7 +34,7 @@ class ViewPagerGroupController :
         val pageZero: Class<FragmentFlowController<Unit, Unit>>,
         val pageOne: Class<FragmentFlowController<Unit, Unit>>,
         val pageTwo: Class<FragmentFlowController<Unit, Unit>>
-    ) : GroupInput()
+    )
 
     var backIndex = 0
 

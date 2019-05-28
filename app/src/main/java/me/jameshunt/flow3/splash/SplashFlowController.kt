@@ -3,6 +3,7 @@ package me.jameshunt.flow3.splash
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.map
 import me.jameshunt.flow.DeepLinkData
+import me.jameshunt.flow.flowGroup
 import me.jameshunt.flow.promise.DispatchExecutor
 import me.jameshunt.flow.proxy
 import me.jameshunt.flow3.ViewPagerGroupController
@@ -26,7 +27,7 @@ class SplashFlowController: GeneratedSplashController() {
 
     override fun onLoad(state: Load): Promise<FromLoad> {
         return Promise.value(Unit)
-            .map(on = DispatchExecutor.global) { Thread.sleep(1000) }
+            .map(on = DispatchExecutor.background) { Thread.sleep(1000) }
             .map { FinishedLoading }
     }
 
