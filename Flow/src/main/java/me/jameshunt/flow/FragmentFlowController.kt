@@ -68,28 +68,6 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         }
     }
 
-    fun <GroupInput, GroupOutput, Controller> flowGroup(
-        controller: Class<Controller>,
-        input: GroupInput
-    ): Promise<FlowResult<GroupOutput>>
-            where GroupInput : FragmentGroupFlowController.GroupInput,
-                  Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
-
-        // remove all the fragments from this flowController before starting the next FlowController
-        // (state will still be saved when they get back)
-        // The fragments parent views could potentially no longer exist
-        FlowManager.fragmentDisplayManager.removeAll()
-
-        val flowController = controller.newInstance()
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(input).ensure {
-            childFlows.remove(flowController)
-            FlowManager.resumeActiveFlowControllers()
-        }
-    }
-
     fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
         input: NewInput
