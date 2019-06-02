@@ -20,52 +20,13 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
 
+    internal var flowFunctions: FlowFunctions = FlowFunctionsImpl()
+
     fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
-
-        when(isDialog) {
-            true -> {
-                activeDialogFragment = fragmentProxy.also { it.input = input }
-                activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentBehindDialog(viewId)
-            }
-            false -> activeFragment = fragmentProxy.also { it.input = input }
-        }
-
-        val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
-            FlowManager.fragmentDisplayManager
-                .show(fragmentProxy = fragmentProxy, viewId = this.viewId)
-                .flowForResult()
-                .ensure {
-                    activeFragment = null
-
-                    if(isDialog) {
-                        activeDialogFragment = null
-                    }
-                }
-        }
-
-        return try {
-            when (FlowManager.rootViewManager.isViewVisible(viewId)) {
-                true -> showFragmentForResult()
-                false -> {
-                    val fragmentName = fragmentProxy.clazz.simpleName
-                    val flowName = this::class.java.simpleName
-                    throw IllegalStateException("View does not exist for fragment: $fragmentName, in flow: $flowName")
-                }
-            }
-        } catch (e: IllegalStateException) {
-            e.printStackTrace()
-            // from committing transaction after onSavedInstanceState,
-            // or view does not exist
-            uncommittedTransaction = {
-                showFragmentForResult().ensure { uncommittedTransaction = null }
-            }
-
-            fragmentProxy.deferredPromise.promise
-        }
+        return flowFunctions.flow(fragmentProxy = fragmentProxy, input = input)
     }
 
     fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
@@ -112,5 +73,63 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
     final override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
+    }
+
+    interface FlowFunctions {
+        fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
+            fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
+            input: FragInput
+        ): Promise<FlowResult<FragOutput>>
+    }
+
+    inner class FlowFunctionsImpl: FlowFunctions {
+
+        override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
+            fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
+            input: FragInput
+        ): Promise<FlowResult<FragOutput>> {
+            val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
+
+            when(isDialog) {
+                true -> {
+                    activeDialogFragment = fragmentProxy.also { it.input = input }
+                    activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentBehindDialog(viewId)
+                }
+                false -> activeFragment = fragmentProxy.also { it.input = input }
+            }
+
+            val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
+                FlowManager.fragmentDisplayManager
+                    .show(fragmentProxy = fragmentProxy, viewId = this@FragmentFlowController.viewId)
+                    .flowForResult()
+                    .ensure {
+                        activeFragment = null
+
+                        if(isDialog) {
+                            activeDialogFragment = null
+                        }
+                    }
+            }
+
+            return try {
+                when (FlowManager.rootViewManager.isViewVisible(viewId)) {
+                    true -> showFragmentForResult()
+                    false -> {
+                        val fragmentName = fragmentProxy.clazz.simpleName
+                        val flowName = this::class.java.simpleName
+                        throw IllegalStateException("View does not exist for fragment: $fragmentName, in flow: $flowName")
+                    }
+                }
+            } catch (e: IllegalStateException) {
+                e.printStackTrace()
+                // from committing transaction after onSavedInstanceState,
+                // or view does not exist
+                uncommittedTransaction = {
+                    showFragmentForResult().ensure { uncommittedTransaction = null }
+                }
+
+                fragmentProxy.deferredPromise.promise
+            }
+        }
     }
 }
