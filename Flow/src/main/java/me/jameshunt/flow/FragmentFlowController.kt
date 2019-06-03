@@ -5,6 +5,20 @@ import com.inmotionsoftware.promisekt.ensure
 
 typealias ViewId = Int
 
+interface FragmentFlowFunctions {
+    fun <NewInput, NewOutput, Controller> flow(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<FlowResult<NewOutput>>
+            where Controller : FragmentFlowController<NewInput, NewOutput>
+
+    fun <FragInput, FragOutput, FragmentType> flow(
+        fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
+        input: FragInput
+    ): Promise<FlowResult<FragOutput>>
+            where FragmentType : FlowUI<FragInput, FragOutput>
+}
+
 abstract class FragmentFlowController<Input, Output> : FlowController<Input, Output>() {
 
     interface DoneState<Output> {
@@ -13,14 +27,14 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
     internal var viewId: ViewId = 0 // is only set once at the beginning
 
+    private var flowFunctions: FragmentFlowFunctions = FragmentFlowFunctionsImpl()
+
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
     private var activeDialogFragment: FragmentProxy<*, *, *>? = null
 
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
-
-    internal var flowFunctions: FlowFunctions = FlowFunctionsImpl()
 
     fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
@@ -33,16 +47,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
-        val flowController = controller.newInstance().apply {
-            // apply same viewId to child
-            this@apply.viewId = this@FragmentFlowController.viewId
-        }
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(input).ensure {
-            childFlows.remove(flowController)
-        }
+        return flowFunctions.flow(controller = controller, input = input)
     }
 
     final override fun resume(currentState: State) {
@@ -75,14 +80,23 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
     }
 
-    interface FlowFunctions {
-        fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
-            fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
-            input: FragInput
-        ): Promise<FlowResult<FragOutput>>
-    }
+    inner class FragmentFlowFunctionsImpl : FragmentFlowFunctions {
 
-    inner class FlowFunctionsImpl: FlowFunctions {
+        override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+            controller: Class<Controller>,
+            input: NewInput
+        ): Promise<FlowResult<NewOutput>> {
+            val flowController = controller.newInstance().apply {
+                // apply same viewId to child
+                this@apply.viewId = this@FragmentFlowController.viewId
+            }
+
+            childFlows.add(flowController)
+
+            return flowController.launchFlow(input).ensure {
+                childFlows.remove(flowController)
+            }
+        }
 
         override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
             fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
@@ -90,7 +104,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         ): Promise<FlowResult<FragOutput>> {
             val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
 
-            when(isDialog) {
+            when (isDialog) {
                 true -> {
                     activeDialogFragment = fragmentProxy.also { it.input = input }
                     activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentBehindDialog(viewId)
@@ -105,7 +119,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
                     .ensure {
                         activeFragment = null
 
-                        if(isDialog) {
+                        if (isDialog) {
                             activeDialogFragment = null
                         }
                     }
@@ -117,7 +131,8 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
                     false -> {
                         val fragmentName = fragmentProxy.clazz.simpleName
                         val flowName = this::class.java.simpleName
-                        throw IllegalStateException("View does not exist for fragment: $fragmentName, in flow: $flowName")
+                        val message = "View does not exist for fragment: $fragmentName, in flow: $flowName"
+                        throw IllegalStateException(message)
                     }
                 }
             } catch (e: IllegalStateException) {
