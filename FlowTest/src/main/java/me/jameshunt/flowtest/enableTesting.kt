@@ -1,15 +1,21 @@
-package me.jameshunt.flow.testing
+package me.jameshunt.flowtest
 
+import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.Promise
+import com.inmotionsoftware.promisekt.conf
 import me.jameshunt.flow.FlowResult
 import me.jameshunt.flow.FlowUI
 import me.jameshunt.flow.FragmentFlowController
 import me.jameshunt.flow.FragmentProxy
-import me.jameshunt.flow.promise.DispatchExecutor
 
 fun FragmentFlowController<*, *>.enableTesting(configure: TestFlowFunctions.() -> Unit) {
-    DispatchExecutor.setTestExecutor()
-    this.flowFunctions = TestFlowFunctions().apply(configure)
+    conf.Q = PMKConfiguration.Value(null, null)
+
+    // set TestFlowFunctions for mocking fragments and other flowControllers
+    FragmentFlowController::class.java.getDeclaredField("flowFunctions").let {
+        it.isAccessible = true
+        it.set(this, TestFlowFunctions().apply(configure))
+    }
 }
 
 class TestFlowFunctions : FragmentFlowController.FlowFunctions {
@@ -27,11 +33,16 @@ class TestFlowFunctions : FragmentFlowController.FlowFunctions {
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>> {
-        val fragmentClass = fragmentProxy.clazz as Class<Any>
+
+        val fragmentClass = fragmentProxy::class.java.getDeclaredField("clazz").let {
+            it.isAccessible = true
+            it.get(fragmentProxy) as Class<Any>
+        }
+
         val computeOutput = fragmentResults[fragmentClass] as? (FragInput) -> FragOutput
 
         val output = computeOutput?.invoke(input)
-            ?: throw IllegalArgumentException("Mock not setup for ${fragmentProxy.clazz.simpleName}")
+            ?: throw IllegalArgumentException("Mock not setup for ${fragmentClass.simpleName}")
 
         return Promise.value(FlowResult.Completed(output))
     }

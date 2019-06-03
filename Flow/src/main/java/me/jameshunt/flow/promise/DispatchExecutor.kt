@@ -13,9 +13,4 @@ object DispatchExecutor {
     internal fun setMainExecutor() {
         PMKConfiguration.Q = PMKConfiguration.Value(main, main)
     }
-
-    // todo, remove after setting it from other module
-    internal fun setTestExecutor() {
-        PMKConfiguration.Q = PMKConfiguration.Value(null, null)
-    }
 }

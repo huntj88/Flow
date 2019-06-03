@@ -3,7 +3,6 @@ package me.jameshunt.flow
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import me.jameshunt.flow.util.logFlow
 
 internal class FragmentDisplayManager(private val fragmentManager: FragmentManager) {
 
@@ -56,7 +55,7 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
     fun remove(activeFragment: FragmentProxy<*, *, *>?) {
         activeFragment?.fragment?.get()
             ?.let { fragmentManager.beginTransaction().remove(it as Fragment).commit() }
-            ?: logFlow("no active fragment")
+            ?: println("no active fragment")
     }
 
     fun removeAll(blocking: Boolean = false) {

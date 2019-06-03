@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.3.30'
+    ext.kotlin_version = '1.3.31'
     repositories {
         google()
         jcenter()
@@ -13,7 +13,7 @@ buildscript {
         
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 //        classpath "org.jlleitschuh.gradle:ktlint-gradle:8.0.0"
         classpath 'com.github.huntj88:FlowGenerate:8cb245a5'
