@@ -5,8 +5,10 @@ import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.conf
 import me.jameshunt.flow.*
 
-fun FragmentFlowController<*, *>.enableTesting(configure: TestFlowFunctions.() -> Unit) {
-    conf.Q = PMKConfiguration.Value(null, null)
+fun FragmentFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Unit) {
+    conf.Q.map?.let {
+        conf.Q = PMKConfiguration.Value(null, null)
+    }
 
     // set TestFlowFunctions for mocking fragments and other flowControllers
     FragmentFlowController::class.java.getDeclaredField("flowFunctions").let {
@@ -33,6 +35,22 @@ class TestFlowFunctions : FragmentFlowFunctions {
         mockedResults[fragment as Class<Any>] = thenReturn as (Any?) -> Any?
     }
 
+    override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<FlowResult<NewOutput>> {
+        val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
+
+        return try {
+            val output = computeOutput?.invoke(input)
+                ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
+
+            Promise.value(FlowResult.Completed(output))
+        } catch (e: Exception) {
+            Promise(e)
+        }
+    }
+
     override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
@@ -45,23 +63,14 @@ class TestFlowFunctions : FragmentFlowFunctions {
 
         val computeOutput = mockedResults[fragmentClass] as? (FragInput) -> FragOutput
 
-        val output = computeOutput?.invoke(input)
-            ?: throw IllegalArgumentException("Mock not setup for ${fragmentClass.simpleName}")
+        return try {
+            val output = computeOutput?.invoke(input)
+                ?: throw IllegalArgumentException("Mock not setup for ${fragmentClass.simpleName}")
 
-        return Promise.value(FlowResult.Completed(output))
+            Promise.value(FlowResult.Completed(output))
+        } catch (e: Exception) {
+            Promise(e)
+        }
     }
-
-    override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
-        controller: Class<Controller>,
-        input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
-        val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
-
-        val output = computeOutput?.invoke(input)
-            ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
-
-        return Promise.value(FlowResult.Completed(output))
-    }
-
 }
 
