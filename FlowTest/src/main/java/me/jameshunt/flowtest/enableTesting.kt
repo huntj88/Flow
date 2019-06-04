@@ -1,5 +1,7 @@
 package me.jameshunt.flowtest
 
+import android.content.Context
+import android.content.Intent
 import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.conf
@@ -17,7 +19,7 @@ fun FragmentFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Uni
     }
 }
 
-class TestFlowFunctions : FragmentFlowFunctions {
+class TestFlowFunctions : AndroidFlowFunctions {
 
     private val mockedResults = mutableMapOf<Class<Any>, ((Any?) -> Any?)>()
 
@@ -71,6 +73,13 @@ class TestFlowFunctions : FragmentFlowFunctions {
         } catch (e: Exception) {
             Promise(e)
         }
+    }
+
+    override fun <ActivityOutput> flow(
+        activityIntent: Intent,
+        handleResult: (Context, result: Intent) -> ActivityOutput
+    ): Promise<FlowResult<ActivityOutput>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
 

@@ -1,5 +1,6 @@
 package me.jameshunt.flow
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,14 @@ abstract class FlowActivity<RootFlowController : FragmentFlowController<DeepLink
     override fun onSaveInstanceState(outState: Bundle) {
         this.fragmentDisplayManager.saveAll()
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == ACTIVITY_FOR_RESULT) {
+            FlowManager.activityForResultManager.onActivityResult(data)
+        }
     }
 
     @CallSuper

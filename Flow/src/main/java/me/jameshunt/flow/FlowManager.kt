@@ -25,6 +25,8 @@ internal object FlowManager {
     val rootViewManager: RootViewManager
         get() = flowActivity.rootViewManager
 
+    val activityForResultManager = ActivityForResultManager { flowActivity }
+
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
 

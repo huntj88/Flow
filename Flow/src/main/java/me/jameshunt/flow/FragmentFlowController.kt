@@ -1,11 +1,13 @@
 package me.jameshunt.flow
 
+import android.content.Context
+import android.content.Intent
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
 
 typealias ViewId = Int
 
-interface FragmentFlowFunctions {
+interface AndroidFlowFunctions {
     fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
@@ -17,6 +19,11 @@ interface FragmentFlowFunctions {
         input: FragInput
     ): Promise<FlowResult<FragOutput>>
             where FragmentType : FlowUI<FragInput, FragOutput>
+
+    fun <ActivityOutput> flow(
+        activityIntent: Intent,
+        handleResult: (Context, result: Intent) -> ActivityOutput
+    ): Promise<FlowResult<ActivityOutput>>
 }
 
 abstract class FragmentFlowController<Input, Output> : FlowController<Input, Output>() {
@@ -27,7 +34,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
     internal var viewId: ViewId = 0 // is only set once at the beginning
 
-    private var flowFunctions: FragmentFlowFunctions = FragmentFlowFunctionsImpl()
+    private var flowFunctions: AndroidFlowFunctions = AndroidFlowFunctionsImpl()
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
@@ -48,6 +55,13 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
         return flowFunctions.flow(controller = controller, input = input)
+    }
+
+    fun <ActivityOutput> flow(
+        activityIntent: Intent,
+        handleResult: (Context, result: Intent) -> ActivityOutput
+    ): Promise<FlowResult<ActivityOutput>> {
+        return flowFunctions.flow(activityIntent = activityIntent, handleResult = handleResult)
     }
 
     final override fun resume(currentState: State) {
@@ -80,7 +94,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
     }
 
-    inner class FragmentFlowFunctionsImpl : FragmentFlowFunctions {
+    inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
         override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
             controller: Class<Controller>,
@@ -96,6 +110,16 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
             return flowController.launchFlow(input).ensure {
                 childFlows.remove(flowController)
             }
+        }
+
+        override fun <ActivityOutput> flow(
+            activityIntent: Intent,
+            handleResult: (Context, result: Intent) -> ActivityOutput
+        ): Promise<FlowResult<ActivityOutput>> {
+            return FlowManager.activityForResultManager.activityForResult(
+                intent = activityIntent,
+                handleResult = handleResult
+            )
         }
 
         override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
