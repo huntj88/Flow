@@ -12,19 +12,19 @@ class ActivityForResultManager(val flowActivity: () -> FlowActivity<*>) {
 
     // for activities that return a result, like an image picker
     private var activityResultPromise: DeferredPromise<FlowResult<Any?>> = DeferredPromise()
-    private var activityResultHandler: ((Context, Intent) -> Any?)? = null
+    private var resultHandler: ((Context, Intent) -> Any?)? = null
 
     fun <ActivityOutput> activityForResult(
         intent: Intent,
         handleResult: (Context, data: Intent) -> ActivityOutput
     ): Promise<FlowResult<ActivityOutput>> {
 
-        activityResultHandler = handleResult
+        resultHandler = handleResult
 
         flowActivity().startActivityForResult(intent, ACTIVITY_FOR_RESULT)
 
         return (activityResultPromise.promise as Promise<FlowResult<ActivityOutput>>).ensure {
-            activityResultHandler = null
+            resultHandler = null
             activityResultPromise = DeferredPromise()
         }
     }
@@ -32,7 +32,7 @@ class ActivityForResultManager(val flowActivity: () -> FlowActivity<*>) {
     fun onActivityResult(data: Intent?) {
 
         val promiseOutput = data?.let {
-            val output = activityResultHandler!!(flowActivity(), data)
+            val output = resultHandler!!(flowActivity(), data)
             FlowResult.Completed(output)
         } ?: FlowResult.Back
 

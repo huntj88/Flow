@@ -1,7 +1,5 @@
 package me.jameshunt.flowtest
 
-import android.content.Context
-import android.content.Intent
 import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.conf
@@ -73,13 +71,6 @@ class TestFlowFunctions : AndroidFlowFunctions {
         } catch (e: Exception) {
             Promise(e)
         }
-    }
-
-    override fun <ActivityOutput> flow(
-        activityIntent: Intent,
-        handleResult: (Context, result: Intent) -> ActivityOutput
-    ): Promise<FlowResult<ActivityOutput>> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
 
