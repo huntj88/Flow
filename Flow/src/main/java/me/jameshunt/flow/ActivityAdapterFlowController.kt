@@ -10,7 +10,7 @@ abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowContro
     override fun onStart(state: InitialState<Input>) {
         handleInputOutputIntents(state.input).done {
             when (it) {
-                is FlowResult.Completed -> this.onDone(it.data)
+                is FlowResult.Completed -> this.onDone(FlowResult.Completed(it.data))
                 is FlowResult.Back -> (object : BackState {}).onBack()
             }
         }

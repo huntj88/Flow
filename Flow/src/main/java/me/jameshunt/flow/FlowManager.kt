@@ -10,7 +10,7 @@ internal object FlowManager {
         DispatchExecutor.setMainExecutor()
     }
 
-    private var rootFlow: FlowController<*, Unit>? = null
+    private var rootFlow: FragmentFlowController<*, Unit>? = null
 
     private lateinit var transientActivity: WeakReference<FlowActivity<*>>
     private val flowActivity: FlowActivity<*>
@@ -46,7 +46,7 @@ internal object FlowManager {
     }
 
     fun delegateBack() {
-        rootFlow!!.handleBack()
+        (rootFlow as FragmentFlowController<*, *>).handleBack()
     }
 
     fun resumeActiveFlowControllers() {

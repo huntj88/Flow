@@ -2,6 +2,8 @@ package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
+import com.inmotionsoftware.promisekt.recover
+import com.inmotionsoftware.promisekt.thenMap
 
 typealias ViewId = Int
 
@@ -19,11 +21,15 @@ interface AndroidFlowFunctions {
             where FragmentType : FlowUI<FragInput, FragOutput>
 }
 
-abstract class FragmentFlowController<Input, Output> : FlowController<Input, Output>() {
+abstract class FragmentFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
+
+    interface BackState
 
     interface DoneState<Output> {
         val output: Output
     }
+
+    protected lateinit var currentState: State
 
     internal var viewId: ViewId = 0 // is only set once at the beginning
 
@@ -50,12 +56,34 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
         return flowFunctions.flow(controller = controller, input = input)
     }
 
+    // Inlining this gives better errors about where the error happened
+    inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
+        crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
+        crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
+        crossinline onCatch: ((Throwable) -> Promise<From>) = { throw it }
+    ): Promise<From> = this
+        .thenMap {
+            when (it) {
+                is FlowResult.Back -> onBack()
+                is FlowResult.Completed -> onComplete(it.data)
+            }
+        }
+        .recover { onCatch(it) }
+
+    // internal to this instance use
+    final override fun launchFlow(input: Input): Promise<FlowResult<Output>> {
+        currentState = InitialState(input)
+        return super.launchFlow(input)
+    }
+
     /**
      * resuming only renders the view again
      * the fragment reattaches itself to the existing promise
      */
 
-    final override fun resume(currentState: State) {
+    internal fun resume() = resume(currentState)
+
+    internal open fun resume(currentState: State) {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
             FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
@@ -77,12 +105,19 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
 
     fun DoneState<Output>.onDone() {
         FlowManager.fragmentDisplayManager.remove(activeFragment)
-        super.onDone(output)
+        super.onDone(FlowResult.Completed(output))
     }
 
-    final override fun handleBack() {
+    protected fun BackState.onBack() {
+        super.onDone(FlowResult.Back)
+    }
+
+    internal open fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
-        this.childFlows.firstOrNull()?.handleBack() ?: this.activeFragment?.onBack()
+        this.childFlows.firstOrNull()
+            ?.let { it as? FragmentFlowController<*, *> }
+            ?.handleBack()
+            ?: this.activeFragment?.onBack()
     }
 
     inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
@@ -94,7 +129,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Out
             val flowController = controller.newInstance().apply {
                 // apply same viewId to child
                 this@apply.viewId = this@FragmentFlowController.viewId
-            }
+            } as FlowController<NewInput, FlowResult<NewOutput>>
 
             childFlows.add(flowController)
 

@@ -7,10 +7,10 @@ import com.inmotionsoftware.promisekt.map
 
 abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId
-) : FlowController<Input, Output>() {
+) : FragmentFlowController<Input, Output>() {
 
     protected object Back : BackState, State
-    protected data class Done<Output>(override val output: Output) : FragmentFlowController.DoneState<Output>, State
+    protected data class Done<Output>(override val output: Output) : DoneState<Output>, State
 
     private var groupResult: Promise<Unit>? = null
 
@@ -23,7 +23,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
         groupResult = startFlowInGroup(state.input).map {
             when (it) {
                 is Back -> it.onBack()
-                is Done<*> -> this@FragmentGroupFlowController.onDone(it.output as Output)
+                is Done<*> -> this@FragmentGroupFlowController.onDone(it.output as FlowResult<Output>)
             }
         }
     }
@@ -51,7 +51,9 @@ abstract class FragmentGroupFlowController<Input, Output>(
     protected open fun childIndexToDelegateBack(): Int = 0
 
     final override fun handleBack() {
-        this.childFlows[childIndexToDelegateBack()].handleBack()
+        this.childFlows[childIndexToDelegateBack()]
+            .let { it as FragmentFlowController<*, *> }
+            .handleBack()
     }
 
     final override fun resume(currentState: State) {
@@ -59,7 +61,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
     }
 }
 
-fun <GroupInput, GroupOutput, Controller> FlowController<*, *>.flowGroup(
+fun <GroupInput, GroupOutput, Controller> FragmentFlowController<*, *>.flowGroup(
     controller: Class<Controller>,
     input: GroupInput
 ): Promise<FlowResult<GroupOutput>>
