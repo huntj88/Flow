@@ -2,8 +2,6 @@ package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
-import com.inmotionsoftware.promisekt.recover
-import com.inmotionsoftware.promisekt.thenMap
 
 typealias ViewId = Int
 
@@ -20,6 +18,12 @@ interface AndroidFlowFunctions {
     ): Promise<FlowResult<FragOutput>>
             where FragmentType : FlowUI<FragInput, FragOutput>
 
+    fun <GroupInput, GroupOutput, Controller> flowGroup(
+        controller: Class<Controller>,
+        input: GroupInput
+    ): Promise<FlowResult<GroupOutput>>
+            where Controller : FragmentGroupFlowController<GroupInput, GroupOutput>
+
     fun <NewInput, NewOutput, Controller> flowNoUI(
         controller: Class<Controller>,
         input: NewInput
@@ -27,15 +31,7 @@ interface AndroidFlowFunctions {
             where Controller : FlowController<NewInput, NewOutput>
 }
 
-abstract class FragmentFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
-
-    interface BackState
-
-    interface DoneState<Output> {
-        val output: Output
-    }
-
-    protected lateinit var currentState: State
+abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Input, Output>() {
 
     internal var viewId: ViewId = 0 // is only set once at the beginning
 
@@ -69,19 +65,12 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
         return flowFunctions.flowNoUI(controller = controller, input = input)
     }
 
-    // Inlining this gives better errors about where the error happened
-    inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
-        crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
-        crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
-        crossinline onCatch: ((Throwable) -> Promise<From>) = { throw it }
-    ): Promise<From> = this
-        .thenMap {
-            when (it) {
-                is FlowResult.Back -> onBack()
-                is FlowResult.Completed -> onComplete(it.data)
-            }
-        }
-        .recover { onCatch(it) }
+    fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+        controller: Class<Controller>,
+        input: GroupInput
+    ): Promise<FlowResult<GroupOutput>> {
+        return flowFunctions.flowGroup(controller = controller, input = input)
+    }
 
     // internal to this instance use
     final override fun launchFlow(input: Input): Promise<FlowResult<Output>> {
@@ -94,14 +83,21 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
      * the fragment reattaches itself to the existing promise
      */
 
-    internal fun resume() = resume(currentState)
-
-    internal open fun resume(currentState: State) {
+    final override fun resume(currentState: State) {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
-            FlowManager.fragmentDisplayManager.show(
-                fragmentProxy = it,
-                viewId = this.viewId
-            )
+            val showFragment: () -> Unit = {
+                FlowManager.fragmentDisplayManager.show(
+                    fragmentProxy = it,
+                    viewId = this.viewId
+                )
+            }
+
+            try {
+                showFragment()
+            } catch (e: IllegalStateException) {
+                e.printStackTrace() // from committing transaction after onSavedInstanceState
+                uncommittedTransaction = { showFragment(); uncommittedTransaction = null }
+            }
         }
 
         (activeDialogFragment as? FragmentProxy<Any?, Any?, FlowDialogFragment<Any?, Any?>>)?.let {
@@ -109,10 +105,20 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
             // so null out the instance so it won't try and show the instance from the old activity
             it.fragment = null
 
-            FlowManager.fragmentDisplayManager.show(
+            fun showDialogFragment() = FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
                 viewId = this.viewId
             )
+
+            try {
+                showDialogFragment()
+            } catch (e: IllegalStateException) {
+                e.printStackTrace() // from committing transaction after onSavedInstanceState
+                uncommittedTransaction = {
+                    uncommittedTransaction?.invoke() // show the fragment behind dialog
+                    showDialogFragment()
+                }
+            }
         }
     }
 
@@ -125,10 +131,10 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
         super.onDone(FlowResult.Back)
     }
 
-    internal open fun handleBack() {
+    final override fun handleBack() {
         // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows.firstOrNull()
-            ?.let { it as? FragmentFlowController<*, *> }
+            ?.let { it as? AndroidFlowController<*, *> }
             ?.handleBack()
             ?: this.activeFragment?.onBack()
     }
@@ -151,22 +157,6 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
             }
         }
 
-        override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
-            controller: Class<Controller>,
-            input: NewInput
-        ): Promise<NewOutput> {
-            val flowController = controller.newInstance()
-
-            childFlows.add(flowController)
-
-            activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
-
-            return flowController.launchFlow(input).ensure {
-                childFlows.remove(flowController)
-                activeFragment = null
-            }
-        }
-
         override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
             fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
             input: FragInput
@@ -181,18 +171,17 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
                 false -> activeFragment = fragmentProxy.also { it.input = input }
             }
 
-            val showFragmentForResult: () -> Promise<FlowResult<FragOutput>> = {
-                FlowManager.fragmentDisplayManager
-                    .show(fragmentProxy = fragmentProxy, viewId = this@FragmentFlowController.viewId)
-                    .flowForResult()
-                    .ensure {
-                        activeFragment = null
+            fun showFragmentForResult(): Promise<FlowResult<FragOutput>> = FlowManager
+                .fragmentDisplayManager
+                .show(fragmentProxy = fragmentProxy, viewId = this@FragmentFlowController.viewId)
+                .flowForResult()
+                .ensure {
+                    activeFragment = null
 
-                        if (isDialog) {
-                            activeDialogFragment = null
-                        }
+                    if (isDialog) {
+                        activeDialogFragment = null
                     }
-            }
+                }
 
             return try {
                 when (FlowManager.rootViewManager.isViewVisible(viewId)) {
@@ -213,6 +202,42 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
                 }
 
                 fragmentProxy.deferredPromise.promise
+            }
+        }
+
+        override fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+            controller: Class<Controller>,
+            input: GroupInput
+        ): Promise<FlowResult<GroupOutput>> {
+
+            // remove all the fragments from this flowController before starting the next FlowController
+            // (state will still be saved when they get back)
+            // The fragments parent views could potentially no longer exist
+            FlowManager.fragmentDisplayManager.removeAll()
+
+            val flowController = controller.newInstance()
+
+            childFlows.add(flowController)
+
+            return flowController.launchFlow(input).ensure {
+                childFlows.remove(flowController)
+                FlowManager.resumeActiveFlowControllers()
+            }
+        }
+
+        override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+            controller: Class<Controller>,
+            input: NewInput
+        ): Promise<NewOutput> {
+            val flowController = controller.newInstance()
+
+            childFlows.add(flowController)
+
+            activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
+
+            return flowController.launchFlow(input).ensure {
+                childFlows.remove(flowController)
+                activeFragment = null
             }
         }
     }

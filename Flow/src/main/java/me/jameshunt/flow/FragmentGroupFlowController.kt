@@ -7,7 +7,7 @@ import com.inmotionsoftware.promisekt.map
 
 abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId
-) : FragmentFlowController<Input, Output>() {
+) : AndroidFlowController<Input, Output>() {
 
     protected object Back : BackState, State
     protected data class Done<Output>(override val output: Output) : DoneState<Output>, State
@@ -15,6 +15,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
     private var groupResult: Promise<Unit>? = null
 
     final override fun onStart(state: InitialState<Input>) {
+        currentState = state
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
         setupGroup(layout)
 
@@ -22,10 +23,10 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
         groupResult = startFlowInGroup(state.input).map {
             when (it) {
-                is Back -> it.onBack()
+                is Back -> super.onDone(FlowResult.Back)
                 is Done<*> -> {
-                    val output = FlowResult.Completed(it.output) as FlowResult<Output>
-                    this@FragmentGroupFlowController.onDone(output)
+                    val output = (FlowResult.Completed(it.output) as? FlowResult<Output>) ?: throw IllegalStateException(it.toString())
+                    super.onDone(output)
                 }
             }
         }
@@ -55,32 +56,11 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
     final override fun handleBack() {
         this.childFlows[childIndexToDelegateBack()]
-            .let { it as FragmentFlowController<*, *> }
+            .let { it as AndroidFlowController<*, *> }
             .handleBack()
     }
 
     final override fun resume(currentState: State) {
         this.onStart(currentState as InitialState<Input>)
-    }
-}
-
-fun <GroupInput, GroupOutput, Controller> FragmentFlowController<*, *>.flowGroup(
-    controller: Class<Controller>,
-    input: GroupInput
-): Promise<FlowResult<GroupOutput>>
-        where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
-
-    // remove all the fragments from this flowController before starting the next FlowController
-    // (state will still be saved when they get back)
-    // The fragments parent views could potentially no longer exist
-    FlowManager.fragmentDisplayManager.removeAll()
-
-    val flowController = controller.newInstance()
-
-    childFlows.add(flowController)
-
-    return flowController.launchFlow(input).ensure {
-        childFlows.remove(flowController)
-        FlowManager.resumeActiveFlowControllers()
     }
 }

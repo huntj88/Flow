@@ -10,7 +10,7 @@ internal object FlowManager {
         DispatchExecutor.setMainExecutor()
     }
 
-    private var rootFlow: FragmentFlowController<*, Unit>? = null
+    private var rootFlow: AndroidFlowController<*, Unit>? = null
 
     private lateinit var transientActivity: WeakReference<FlowActivity<*>>
     private val flowActivity: FlowActivity<*>
@@ -46,11 +46,11 @@ internal object FlowManager {
     }
 
     fun delegateBack() {
-        (rootFlow as FragmentFlowController<*, *>).handleBack()
+        (rootFlow as AndroidFlowController<*, *>).handleBack()
     }
 
     fun resumeActiveFlowControllers() {
-        fragmentDisplayManager.removeAll(blocking = true)
+        fragmentDisplayManager.removeAll()
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
 

@@ -58,19 +58,14 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
             ?: println("no active fragment")
     }
 
-    fun removeAll(blocking: Boolean = false) {
+    fun removeAll() {
         fragmentManager.beginTransaction()
             .also { transaction ->
                 fragmentManager.fragments.forEach {
                     transaction.remove(it)
                 }
             }
-            .let {
-                when (blocking) {
-                    true -> it.commitNow()
-                    false -> it.commit()
-                }
-            }
+            .let { it.commitNowAllowingStateLoss() }
     }
 
     fun getVisibleFragmentProxy(viewId: ViewId): FragmentProxy<*, *, *>? {
