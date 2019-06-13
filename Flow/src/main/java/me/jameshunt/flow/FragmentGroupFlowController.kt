@@ -25,7 +25,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
             when (it) {
                 is Back -> super.onDone(FlowResult.Back)
                 is Done<*> -> {
-                    val output = (FlowResult.Completed(it.output) as? FlowResult<Output>) ?: throw IllegalStateException(it.toString())
+                    val output = FlowResult.Completed(it.output) as FlowResult<Output>
                     super.onDone(output)
                 }
             }
@@ -36,13 +36,15 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
     abstract fun startFlowInGroup(groupInput: Input): Promise<State>
 
-    fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+    fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         viewId: ViewId,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
+    ): Promise<FlowResult<NewOutput>>
+            where Controller : FragmentFlowController<NewInput, NewOutput> {
+
         val flowController = controller.newInstance().apply {
-            (this as FragmentFlowController<NewInput, NewOutput>).viewId = viewId
+            this.viewId = viewId
         }
 
         childFlows.add(flowController)

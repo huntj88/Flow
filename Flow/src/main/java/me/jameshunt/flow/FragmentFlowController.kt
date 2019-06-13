@@ -44,31 +44,35 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
 
-    fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
+    fun <FragInput, FragOutput, FragmentType> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
-    ): Promise<FlowResult<FragOutput>> {
+    ): Promise<FlowResult<FragOutput>>
+            where FragmentType : FlowUI<FragInput, FragOutput> {
         return flowFunctions.flow(fragmentProxy = fragmentProxy, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+    fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
+    ): Promise<FlowResult<NewOutput>>
+            where Controller : FragmentFlowController<NewInput, NewOutput> {
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+    fun <NewInput, NewOutput, Controller> flowNoUI(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput> {
+    ): Promise<NewOutput>
+            where Controller : FlowController<NewInput, NewOutput> {
         return flowFunctions.flowNoUI(controller = controller, input = input)
     }
 
-    fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+    fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
-    ): Promise<FlowResult<GroupOutput>> {
+    ): Promise<FlowResult<GroupOutput>>
+            where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
         return flowFunctions.flowGroup(controller = controller, input = input)
     }
 
@@ -141,10 +145,12 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
-        override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+        override fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<FlowResult<NewOutput>> {
+        ): Promise<FlowResult<NewOutput>>
+                where Controller : FragmentFlowController<NewInput, NewOutput> {
+
             val flowController = controller.newInstance().apply {
                 // apply same viewId to child
                 this@apply.viewId = this@FragmentFlowController.viewId
@@ -157,10 +163,12 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             }
         }
 
-        override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
+        override fun <FragInput, FragOutput, FragmentType> flow(
             fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
             input: FragInput
-        ): Promise<FlowResult<FragOutput>> {
+        ): Promise<FlowResult<FragOutput>>
+                where FragmentType : FlowUI<FragInput, FragOutput> {
+
             val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
 
             when (isDialog) {
@@ -205,10 +213,11 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             }
         }
 
-        override fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+        override fun <GroupInput, GroupOutput, Controller> flowGroup(
             controller: Class<Controller>,
             input: GroupInput
-        ): Promise<FlowResult<GroupOutput>> {
+        ): Promise<FlowResult<GroupOutput>>
+                where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
 
             // remove all the fragments from this flowController before starting the next FlowController
             // (state will still be saved when they get back)
@@ -225,10 +234,12 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             }
         }
 
-        override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+        override fun <NewInput, NewOutput, Controller> flowNoUI(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<NewOutput> {
+        ): Promise<NewOutput>
+                where Controller : FlowController<NewInput, NewOutput> {
+
             val flowController = controller.newInstance()
 
             childFlows.add(flowController)
