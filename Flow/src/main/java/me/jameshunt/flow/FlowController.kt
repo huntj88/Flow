@@ -15,7 +15,7 @@ abstract class FlowController<Input, Output> {
 
     protected abstract fun onStart(state: InitialState<Input>)
 
-    internal fun onDone(output: Output) {
+    protected fun onDone(output: Output) {
         this.resultPromise.resolve(output)
     }
 

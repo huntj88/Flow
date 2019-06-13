@@ -59,7 +59,7 @@ internal object FlowManager {
         flowGroup
             .childFlows
             .map { it as FragmentFlowController<*, *> }
-            .map { it.getFragmentFlowLeaf() }
+            .mapNotNull { it.getFragmentFlowLeaf() }
             .forEach { it.resume() }
     }
 
@@ -69,7 +69,7 @@ internal object FlowManager {
         flowGroup
             .childFlows
             .map { it as FragmentFlowController<*, *> }
-            .map { it.getFragmentFlowLeaf() }
+            .mapNotNull { it.getFragmentFlowLeaf() }
             .mapNotNull { it.uncommittedTransaction }
             .forEach { transaction -> transaction() }
     }
@@ -99,12 +99,12 @@ internal object FlowManager {
     }
 
     // find group must be called before this
-    private tailrec fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *> {
+    private fun FragmentFlowController<*, *>.getFragmentFlowLeaf(): FragmentFlowController<*, *>? {
         return when (this.childFlows.isEmpty()) {
             true -> this
 
             // fragmentFlowControllers will only ever have one child
-            false -> (childFlows.first() as FragmentFlowController<*, *>).getFragmentFlowLeaf()
+            false -> (childFlows.mapNotNull { it as? FragmentFlowController<*, *> }.firstOrNull())?.getFragmentFlowLeaf() ?: this
         }
     }
 }

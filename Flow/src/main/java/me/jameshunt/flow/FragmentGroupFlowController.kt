@@ -23,7 +23,10 @@ abstract class FragmentGroupFlowController<Input, Output>(
         groupResult = startFlowInGroup(state.input).map {
             when (it) {
                 is Back -> it.onBack()
-                is Done<*> -> this@FragmentGroupFlowController.onDone(it.output as FlowResult<Output>)
+                is Done<*> -> {
+                    val output = FlowResult.Completed(it.output) as FlowResult<Output>
+                    this@FragmentGroupFlowController.onDone(output)
+                }
             }
         }
     }

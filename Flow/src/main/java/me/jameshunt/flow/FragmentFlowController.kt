@@ -19,6 +19,12 @@ interface AndroidFlowFunctions {
         input: FragInput
     ): Promise<FlowResult<FragOutput>>
             where FragmentType : FlowUI<FragInput, FragOutput>
+
+    fun <NewInput, NewOutput, Controller> flowNoUI(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<NewOutput>
+            where Controller : FlowController<NewInput, NewOutput>
 }
 
 abstract class FragmentFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
@@ -54,6 +60,13 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
         return flowFunctions.flow(controller = controller, input = input)
+    }
+
+    fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<NewOutput> {
+        return flowFunctions.flowNoUI(controller = controller, input = input)
     }
 
     // Inlining this gives better errors about where the error happened
@@ -138,6 +151,22 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
             }
         }
 
+        override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+            controller: Class<Controller>,
+            input: NewInput
+        ): Promise<NewOutput> {
+            val flowController = controller.newInstance()
+
+            childFlows.add(flowController)
+
+            activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
+
+            return flowController.launchFlow(input).ensure {
+                childFlows.remove(flowController)
+                activeFragment = null
+            }
+        }
+
         override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
             fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
             input: FragInput
@@ -147,7 +176,7 @@ abstract class FragmentFlowController<Input, Output> : FlowController<Input, Flo
             when (isDialog) {
                 true -> {
                     activeDialogFragment = fragmentProxy.also { it.input = input }
-                    activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentBehindDialog(viewId)
+                    activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
                 }
                 false -> activeFragment = fragmentProxy.also { it.input = input }
             }
