@@ -1,4 +1,4 @@
-package me.jameshunt.flow
+package me.jameshunt.flowcore
 
 import com.inmotionsoftware.promisekt.DeferredPromise
 import com.inmotionsoftware.promisekt.Promise
@@ -11,7 +11,7 @@ abstract class FlowController<Input, Output> {
 
     private val resultPromise: DeferredPromise<Output> = DeferredPromise()
 
-    internal val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
+    val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
     protected abstract fun onStart(state: InitialState<Input>)
 
@@ -20,7 +20,7 @@ abstract class FlowController<Input, Output> {
     }
 
     // internal to this instance use
-    internal open fun launchFlow(input: Input): Promise<Output> {
+    open fun launchFlow(input: Input): Promise<Output> {
         this.onStart(InitialState(input))
         return this.resultPromise.promise
     }

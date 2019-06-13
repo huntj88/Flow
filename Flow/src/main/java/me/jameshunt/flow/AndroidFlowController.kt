@@ -3,6 +3,7 @@ package me.jameshunt.flow
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.recover
 import com.inmotionsoftware.promisekt.thenMap
+import me.jameshunt.flowcore.FlowController
 
 abstract class AndroidFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
     interface BackState

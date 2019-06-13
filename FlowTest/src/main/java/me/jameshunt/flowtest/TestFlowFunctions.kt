@@ -4,6 +4,7 @@ import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.conf
 import me.jameshunt.flow.*
+import me.jameshunt.flowcore.FlowController
 
 fun FragmentFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Unit) {
     conf.Q.map?.let {
@@ -35,20 +36,24 @@ class TestFlowFunctions : AndroidFlowFunctions {
         mockedResults[fragment as Class<Any>] = thenReturn as (Any?) -> Any?
     }
 
-    override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
-        controller: Class<Controller>,
-        input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
-        val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
+    private fun <In, Out>getAndroidFlowMock(clazz: Class<Any>, input: In): Promise<FlowResult<Out>> {
+        val computeOutput = mockedResults[clazz] as? (In) -> Out
 
         return try {
             val output = computeOutput?.invoke(input)
-                ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
+                ?: throw IllegalArgumentException("Mock not setup for ${clazz.simpleName}")
 
             Promise.value(FlowResult.Completed(output))
         } catch (e: Exception) {
             Promise(e)
         }
+    }
+
+    override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<FlowResult<NewOutput>> {
+        return getAndroidFlowMock(controller as Class<Any>, input)
     }
 
     override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
@@ -61,13 +66,27 @@ class TestFlowFunctions : AndroidFlowFunctions {
             it.get(fragmentProxy) as Class<Any>
         }
 
-        val computeOutput = mockedResults[fragmentClass] as? (FragInput) -> FragOutput
+        return getAndroidFlowMock(fragmentClass, input)
+    }
+
+    override fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+        controller: Class<Controller>,
+        input: GroupInput
+    ): Promise<FlowResult<GroupOutput>> {
+        return getAndroidFlowMock(controller as Class<Any>, input)
+    }
+
+    override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<NewOutput> {
+        val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
 
         return try {
             val output = computeOutput?.invoke(input)
-                ?: throw IllegalArgumentException("Mock not setup for ${fragmentClass.simpleName}")
+                ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
 
-            Promise.value(FlowResult.Completed(output))
+            Promise.value(output)
         } catch (e: Exception) {
             Promise(e)
         }

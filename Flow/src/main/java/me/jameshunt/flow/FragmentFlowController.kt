@@ -2,6 +2,7 @@ package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
+import me.jameshunt.flowcore.FlowController
 
 typealias ViewId = Int
 
