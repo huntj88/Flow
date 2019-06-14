@@ -1,3 +1,3 @@
-include ':Flow', ':PromiseKt', ':FlowTest', ':FlowCore'
+include ':FlowAndroid', ':PromiseKt', ':FlowAndroidTest', ':Flow'
 
-project(':PromiseKt').projectDir = new File('../ims-promise/PromiseKt')
+project(':PromiseKt').projectDir = new File('../promisekt')

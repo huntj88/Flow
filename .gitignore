@@ -15,5 +15,6 @@
 /app/.idea/
 /app/build/
 /Flow/build/
+/FlowAndroid/build/
 /buildSrc/build/
-/FlowTest/build/
+/FlowAndroidTest/build/

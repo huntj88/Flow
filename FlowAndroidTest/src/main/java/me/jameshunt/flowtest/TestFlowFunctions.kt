@@ -4,7 +4,7 @@ import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.conf
 import me.jameshunt.flow.*
-import me.jameshunt.flowcore.FlowController
+import me.jameshunt.flow.BusinessFlowController
 
 fun FragmentFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Unit) {
     conf.Q.map?.let {
@@ -76,7 +76,7 @@ class TestFlowFunctions : AndroidFlowFunctions {
         return getAndroidFlowMock(controller as Class<Any>, input)
     }
 
-    override fun <NewInput, NewOutput, Controller : FlowController<NewInput, NewOutput>> flowNoUI(
+    override fun <NewInput, NewOutput, Controller : BusinessFlowController<NewInput, NewOutput>> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<NewOutput> {

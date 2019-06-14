@@ -2,7 +2,6 @@ package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.Promise
 import com.inmotionsoftware.promisekt.ensure
-import me.jameshunt.flowcore.FlowController
 
 typealias ViewId = Int
 
@@ -25,11 +24,11 @@ interface AndroidFlowFunctions {
     ): Promise<FlowResult<GroupOutput>>
             where Controller : FragmentGroupFlowController<GroupInput, GroupOutput>
 
-    fun <NewInput, NewOutput, Controller> flowNoUI(
+    fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<NewOutput>
-            where Controller : FlowController<NewInput, NewOutput>
+            where Controller : BusinessFlowController<NewInput, NewOutput>
 }
 
 abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Input, Output>() {
@@ -61,12 +60,12 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller> flowNoUI(
+    fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<NewOutput>
-            where Controller : FlowController<NewInput, NewOutput> {
-        return flowFunctions.flowNoUI(controller = controller, input = input)
+            where Controller : BusinessFlowController<NewInput, NewOutput> {
+        return flowFunctions.flowBusiness(controller = controller, input = input)
     }
 
     fun <GroupInput, GroupOutput, Controller> flowGroup(
@@ -235,11 +234,11 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             }
         }
 
-        override fun <NewInput, NewOutput, Controller> flowNoUI(
+        override fun <NewInput, NewOutput, Controller> flowBusiness(
             controller: Class<Controller>,
             input: NewInput
         ): Promise<NewOutput>
-                where Controller : FlowController<NewInput, NewOutput> {
+                where Controller : BusinessFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance()
 

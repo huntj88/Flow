@@ -1,4 +1,4 @@
-package me.jameshunt.flowcore
+package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.DeferredPromise
 import com.inmotionsoftware.promisekt.Promise
@@ -8,6 +8,10 @@ abstract class FlowController<Input, Output> {
     interface State
 
     data class InitialState<Input>(val input: Input) : State
+
+    interface DoneState<Output> {
+        val output: Output
+    }
 
     private val resultPromise: DeferredPromise<Output> = DeferredPromise()
 

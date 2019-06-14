@@ -2,7 +2,6 @@ package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.catch
 import me.jameshunt.flow.promise.DispatchExecutor
-import me.jameshunt.flowcore.FlowController
 import java.lang.ref.WeakReference
 
 internal object FlowManager {
