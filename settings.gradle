@@ -1,3 +1,3 @@
-include ':FlowAndroid', ':PromiseKt', ':FlowAndroidTest', ':Flow'
+include ':FlowAndroid', ':PromiseKt', ':FlowAndroidTest', ':Flow', ':FlowTest'
 
 project(':PromiseKt').projectDir = new File('../promisekt')

@@ -4,6 +4,14 @@ import com.inmotionsoftware.promisekt.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
+interface BusinessFlowFunctions {
+    fun <NewInput, NewOutput, Controller> flow(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<NewOutput>
+            where Controller : BusinessFlowController<NewInput, NewOutput>
+}
+
 abstract class BusinessFlowController<Input, Output> : FlowController<Input, Output>() {
 
     companion object {
@@ -11,23 +19,33 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
         private val backgroundExecutor: Executor? = Executors.newCachedThreadPool()
     }
 
+    private var flowFunctions: BusinessFlowFunctions = BusinessFlowFunctionsImpl()
+
     fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput>
-            where Controller : BusinessFlowController<NewInput, NewOutput> {
-
-        val flowController = controller.newInstance()
-
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(input).ensure {
-            childFlows.remove(flowController)
-        }
+    ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
+        return flowFunctions.flow(controller = controller, input = input)
     }
 
     fun DoneState<Output>.onDone() {
         super.onDone(output)
+    }
+
+    inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {
+        override fun <NewInput, NewOutput, Controller> flow(
+            controller: Class<Controller>,
+            input: NewInput
+        ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
+
+            val flowController = controller.newInstance()
+
+            childFlows.add(flowController)
+
+            return flowController.launchFlow(input).ensure {
+                childFlows.remove(flowController)
+            }
+        }
     }
 
     fun <T, U> Promise<T>.map(map: (T) -> U): Promise<U> =
