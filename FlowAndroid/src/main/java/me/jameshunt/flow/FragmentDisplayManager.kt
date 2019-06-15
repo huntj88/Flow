@@ -70,6 +70,7 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
 
     fun getVisibleFragmentProxy(viewId: ViewId): FragmentProxy<*, *, *>? {
         // needed because when a dialog fragment is active, we need to know what the fragment behind the dialog is
+        // or to set the active fragment when you start a BusinessFlowController
         return (fragmentManager.findFragmentById(viewId) as? FlowFragment<*, *>)?.proxy
     }
 }

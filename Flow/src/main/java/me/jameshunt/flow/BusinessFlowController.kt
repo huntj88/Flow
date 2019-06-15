@@ -14,11 +14,6 @@ interface BusinessFlowFunctions {
 
 abstract class BusinessFlowController<Input, Output> : FlowController<Input, Output>() {
 
-    companion object {
-        // todo: set null in testing module when i make it
-        private val backgroundExecutor: Executor? = Executors.newCachedThreadPool()
-    }
-
     private var flowFunctions: BusinessFlowFunctions = BusinessFlowFunctionsImpl()
 
     fun <NewInput, NewOutput, Controller> flow(
@@ -46,6 +41,14 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
                 childFlows.remove(flowController)
             }
         }
+    }
+
+    /**
+     * operate on background thread by default
+     */
+
+    companion object {
+        private val backgroundExecutor: Executor? = Executors.newCachedThreadPool()
     }
 
     fun <T, U> Promise<T>.map(map: (T) -> U): Promise<U> =
