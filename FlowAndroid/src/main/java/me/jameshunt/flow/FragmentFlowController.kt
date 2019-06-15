@@ -1,7 +1,6 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.Promise
-import com.inmotionsoftware.promisekt.ensure
+import com.inmotionsoftware.promisekt.*
 
 typealias ViewId = Int
 
@@ -27,7 +26,7 @@ interface AndroidFlowFunctions {
     fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput>
+    ): Promise<FlowResult<NewOutput>>
             where Controller : BusinessFlowController<NewInput, NewOutput>
 }
 
@@ -63,7 +62,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput>
+    ): Promise<FlowResult<NewOutput>>
             where Controller : BusinessFlowController<NewInput, NewOutput> {
         return flowFunctions.flowBusiness(controller = controller, input = input)
     }
@@ -136,12 +135,24 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     }
 
     final override fun handleBack() {
-        // does not call FlowController.onBack() ever. that must be done explicitly with a state transition
         this.childFlows.firstOrNull()
-            ?.let { it as? AndroidFlowController<*, *> }
-            ?.handleBack()
-            ?: this.activeFragment?.onBack()
+            .let {
+                when (it) {
+                    is AndroidFlowController<*, *> -> it.handleBack()
+                    is BusinessFlowController<*, *> -> businessDeferred.resolve(FlowResult.Back)
+                    null -> this.activeFragment?.onBack()
+                    else -> throw IllegalStateException()
+                }
+            }
     }
+
+    // promise wrapper around business flow to handle android back, even though BusinessFlowControllers
+    // don't have a concept of going back
+    private var businessDeferred: DeferredPromise<FlowResult<Any?>> = DeferredPromise()
+        get() {
+            field = if (field.promise.isPending) field else DeferredPromise()
+            return field
+        }
 
     inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
@@ -237,19 +248,22 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         override fun <NewInput, NewOutput, Controller> flowBusiness(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<NewOutput>
+        ): Promise<FlowResult<NewOutput>>
                 where Controller : BusinessFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance()
-
             childFlows.add(flowController)
 
             activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
 
-            return flowController.launchFlow(input).ensure {
+            flowController.launchFlow(input)
+                .done { businessDeferred.resolve(FlowResult.Completed(it)) }
+                .catch { businessDeferred.reject(it) }
+
+            return businessDeferred.promise.ensure {
                 childFlows.remove(flowController)
                 activeFragment = null
-            }
+            } as Promise<FlowResult<NewOutput>>
         }
     }
 }
