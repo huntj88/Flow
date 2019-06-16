@@ -59,20 +59,20 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller> flowBusiness(
-        controller: Class<Controller>,
-        input: NewInput
-    ): Promise<FlowResult<NewOutput>>
-            where Controller : BusinessFlowController<NewInput, NewOutput> {
-        return flowFunctions.flowBusiness(controller = controller, input = input)
-    }
-
     fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
     ): Promise<FlowResult<GroupOutput>>
             where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
         return flowFunctions.flowGroup(controller = controller, input = input)
+    }
+
+    fun <NewInput, NewOutput, Controller> flowBusiness(
+        controller: Class<Controller>,
+        input: NewInput
+    ): Promise<FlowResult<NewOutput>>
+            where Controller : BusinessFlowController<NewInput, NewOutput> {
+        return flowFunctions.flowBusiness(controller = controller, input = input)
     }
 
     // internal to this instance use
