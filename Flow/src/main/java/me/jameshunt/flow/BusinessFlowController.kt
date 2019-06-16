@@ -14,14 +14,14 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
 
     private var flowFunctions: BusinessFlowFunctions = BusinessFlowFunctionsImpl()
 
-    fun <NewInput, NewOutput, Controller> flow(
+    protected fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {
+    private inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {
         override fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,
             input: NewInput

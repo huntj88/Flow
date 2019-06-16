@@ -43,7 +43,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     internal var uncommittedTransaction: (() -> Unit)? = null
         private set
 
-    fun <FragInput, FragOutput, FragmentType> flow(
+    protected fun <FragInput, FragOutput, FragmentType> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
     ): Promise<FlowResult<FragOutput>>
@@ -51,7 +51,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flow(fragmentProxy = fragmentProxy, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller> flow(
+    protected fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>>
@@ -59,7 +59,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    fun <GroupInput, GroupOutput, Controller> flowGroup(
+    protected fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
     ): Promise<FlowResult<GroupOutput>>
@@ -67,7 +67,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flowGroup(controller = controller, input = input)
     }
 
-    fun <NewInput, NewOutput, Controller> flowBusiness(
+    protected fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>>
@@ -143,7 +143,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             return field
         }
 
-    inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
+    private inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
         override fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,

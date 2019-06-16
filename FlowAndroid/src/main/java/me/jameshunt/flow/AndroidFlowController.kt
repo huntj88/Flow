@@ -16,7 +16,7 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
     internal abstract fun handleBack()
 
     // Inlining this gives better errors about where the error happened
-    inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
+    protected inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
         crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
         crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
         crossinline onCatch: ((Throwable) -> Promise<From>) = { throw it }

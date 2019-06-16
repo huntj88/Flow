@@ -18,7 +18,7 @@ abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowContro
 
     abstract fun handleInputOutputIntents(flowInput: Input): Promise<FlowResult<Output>>
 
-    fun <Output> flow(
+    protected fun <Output> flow(
         activityIntent: Intent,
         handleResult: (Context, result: Intent) -> Output
     ): Promise<FlowResult<Output>> {
