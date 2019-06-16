@@ -23,10 +23,6 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    fun DoneState<Output>.onDone() {
-        super.onDone(output)
-    }
-
     inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {
         override fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,

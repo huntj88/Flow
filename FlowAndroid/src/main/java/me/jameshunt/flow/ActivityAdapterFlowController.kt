@@ -11,7 +11,7 @@ abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowContro
         handleInputOutputIntents(state.input).done {
             when (it) {
                 is FlowResult.Completed -> this.onDone(FlowResult.Completed(it.data))
-                is FlowResult.Back -> (object : BackState {}).onBack()
+                is FlowResult.Back -> super.onDone(FlowResult.Back)
             }
         }
     }

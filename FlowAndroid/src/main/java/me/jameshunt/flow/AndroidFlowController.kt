@@ -5,6 +5,7 @@ import com.inmotionsoftware.promisekt.recover
 import com.inmotionsoftware.promisekt.thenMap
 
 abstract class AndroidFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
+
     interface BackState
 
     protected lateinit var currentState: State

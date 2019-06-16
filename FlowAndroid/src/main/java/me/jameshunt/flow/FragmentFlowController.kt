@@ -88,12 +88,10 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     final override fun resume(currentState: State) {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
-            val showFragment: () -> Unit = {
-                FlowManager.fragmentDisplayManager.show(
-                    fragmentProxy = it,
-                    viewId = this.viewId
-                )
-            }
+            fun showFragment() = FlowManager.fragmentDisplayManager.show(
+                fragmentProxy = it,
+                viewId = this.viewId
+            )
 
             try {
                 showFragment()
@@ -123,15 +121,6 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 }
             }
         }
-    }
-
-    fun DoneState<Output>.onDone() {
-        FlowManager.fragmentDisplayManager.remove(activeFragment)
-        super.onDone(FlowResult.Completed(output))
-    }
-
-    protected fun BackState.onBack() {
-        super.onDone(FlowResult.Back)
     }
 
     final override fun handleBack() {
@@ -256,6 +245,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
 
+            // businessDeferred is resolvable outside of newly launched flow to handle android back
             flowController.launchFlow(input)
                 .done { businessDeferred.resolve(FlowResult.Completed(it)) }
                 .catch { businessDeferred.reject(it) }
