@@ -53,11 +53,15 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
         }
     }
 
-    internal fun onBack() {
+    internal fun resolve(output: FragOutput) {
+        this.deferredPromise.resolve(FlowResult.Completed(output))
+    }
+
+    internal fun back() {
         this.deferredPromise.resolve(FlowResult.Back)
     }
 
-    internal fun resolve(output: FragOutput) {
-        this.deferredPromise.resolve(FlowResult.Completed(output))
+    internal fun fail(error: Throwable) {
+        this.deferredPromise.reject(error)
     }
 }

@@ -31,6 +31,10 @@ abstract class FlowFragment<Input, Output> : Fragment(), FlowUI<Input, Output> {
         this.proxy!!.resolve(output)
     }
 
+    fun fail(error: Throwable) {
+        this.proxy!!.fail(error)
+    }
+
     override fun onResume() {
         super.onResume()
         proxy!!.input?.let {
@@ -59,6 +63,11 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
         this.dismiss()
     }
 
+    fun fail(error: Throwable) {
+        this.proxy!!.fail(error)
+        this.dismiss()
+    }
+
     override fun onResume() {
         super.onResume()
 
@@ -74,7 +83,7 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
         // DialogFragments are kept around in FragmentManager memory longer,
         // don't let it resolve if fragment is from old activity
         if(proxy?.fragment?.get() == this) {
-            proxy?.onBack()
+            proxy?.back()
         }
     }
 }

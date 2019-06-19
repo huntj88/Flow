@@ -129,7 +129,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 when (it) {
                     is AndroidFlowController<*, *> -> it.handleBack()
                     is BusinessFlowController<*, *> -> businessDeferred.resolve(FlowResult.Back)
-                    null -> this.activeFragment?.onBack()
+                    null -> this.activeFragment?.back()
                     else -> throw IllegalStateException()
                 }
             }
