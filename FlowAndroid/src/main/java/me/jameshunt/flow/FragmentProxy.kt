@@ -54,10 +54,12 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
     }
 
     internal fun resolve(output: FragOutput) {
+        saveState()
         this.deferredPromise.resolve(FlowResult.Completed(output))
     }
 
     internal fun back() {
+        saveState()
         this.deferredPromise.resolve(FlowResult.Back)
     }
 

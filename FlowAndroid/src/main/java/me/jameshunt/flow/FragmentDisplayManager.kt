@@ -10,9 +10,6 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         viewId: ViewId
     ): FragmentType {
-        // save state of fragment that was already in the view
-        (fragmentManager.findFragmentById(viewId) as? FlowFragment<*, *>)?.proxy?.saveState()
-
         val fragment = fragmentProxy.fragment?.get() ?: fragmentProxy.clazz.newInstance()
 
         fragmentProxy.bind(fragment)
