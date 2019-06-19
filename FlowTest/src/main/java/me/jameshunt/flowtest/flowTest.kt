@@ -15,13 +15,13 @@ fun BusinessFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Uni
         conf.Q = PMKConfiguration.Value(null, null)
     }
 
-    BusinessFlowController::class
+    BackgroundTask::class
         .companionObject!!
         .memberProperties
         .first { it.name == "backgroundExecutor" }
         .let { companionExecutor ->
             if (companionExecutor is KMutableProperty<*>) {
-                val instance = BusinessFlowController::class.companionObjectInstance
+                val instance = BackgroundTask::class.companionObjectInstance
                 companionExecutor.setter.call(instance, null)
             }
         }

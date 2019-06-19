@@ -3,7 +3,9 @@ apply plugin: 'kotlin'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+//    testImplementation project(':FlowTest')
     implementation project(':PromiseKt')
+    testImplementation 'junit:junit:4.12'
 }
 
 compileKotlin {

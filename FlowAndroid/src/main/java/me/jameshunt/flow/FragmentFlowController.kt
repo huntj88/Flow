@@ -116,7 +116,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             } catch (e: IllegalStateException) {
                 e.printStackTrace() // from committing transaction after onSavedInstanceState
                 uncommittedTransaction = {
-                    uncommittedTransaction?.invoke() // show the fragment behind dialog
+                    uncommittedTransaction?.invoke() // show the fragment behind dialog, will null out transaction
                     showDialogFragment()
                 }
             }
@@ -154,7 +154,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             val flowController = controller.newInstance().apply {
                 // apply same viewId to child
                 this@apply.viewId = this@FragmentFlowController.viewId
-            } as FlowController<NewInput, FlowResult<NewOutput>>
+            }
 
             childFlows.add(flowController)
 
