@@ -14,8 +14,10 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
     private var groupResult: Promise<Unit>? = null
 
+    private var initialState: InitialState<Input>? = null
+
     final override fun onStart(state: InitialState<Input>) {
-        currentState = state
+        initialState = state
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
         setupGroup(layout)
 
@@ -62,7 +64,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
             .handleBack()
     }
 
-    final override fun resume(currentState: State) {
-        this.onStart(currentState as InitialState<Input>)
+    final override fun resume() {
+        this.onStart(initialState as InitialState<Input>)
     }
 }

@@ -27,7 +27,6 @@ abstract class FlowController<Input, Output> {
         this.resultPromise.reject(e)
     }
 
-    // internal to this instance use
     open fun launchFlow(input: Input): Promise<Output> {
         this.onStart(InitialState(input))
         return this.resultPromise.promise

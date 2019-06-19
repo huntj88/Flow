@@ -75,18 +75,12 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         return flowFunctions.flowBusiness(controller = controller, input = input)
     }
 
-    // internal to this instance use
-    final override fun launchFlow(input: Input): Promise<FlowResult<Output>> {
-        currentState = InitialState(input)
-        return super.launchFlow(input)
-    }
-
     /**
      * resuming only renders the view again
      * the fragment reattaches itself to the existing promise
      */
 
-    final override fun resume(currentState: State) {
+    final override fun resume() {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
             fun showFragment() = FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,

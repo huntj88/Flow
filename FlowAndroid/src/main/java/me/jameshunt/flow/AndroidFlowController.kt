@@ -8,10 +8,7 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
 
     interface BackState
 
-    protected lateinit var currentState: State
-
-    internal fun resume() = resume(currentState)
-    internal abstract fun resume(currentState: State)
+    internal abstract fun resume()
 
     internal abstract fun handleBack()
 
