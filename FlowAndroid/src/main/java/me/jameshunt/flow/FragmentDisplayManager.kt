@@ -52,12 +52,6 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
         }
     }
 
-    fun remove(activeFragment: FragmentProxy<*, *, *>?) {
-        activeFragment?.fragment?.get()
-            ?.let { fragmentManager.beginTransaction().remove(it as Fragment).commit() }
-            ?: println("no active fragment")
-    }
-
     fun removeAll() {
         fragmentManager.beginTransaction()
             .also { transaction ->

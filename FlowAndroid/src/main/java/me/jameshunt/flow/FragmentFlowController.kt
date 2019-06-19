@@ -116,8 +116,9 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             } catch (e: IllegalStateException) {
                 e.printStackTrace() // from committing transaction after onSavedInstanceState
                 uncommittedTransaction = {
-                    uncommittedTransaction?.invoke() // show the fragment behind dialog, will null out transaction
+                    uncommittedTransaction?.invoke() // show the fragment behind dialog
                     showDialogFragment()
+                    uncommittedTransaction = null
                 }
             }
         }
@@ -129,8 +130,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 when (it) {
                     is AndroidFlowController<*, *> -> it.handleBack()
                     is BusinessFlowController<*, *> -> businessDeferred.resolve(FlowResult.Back)
-                    null -> this.activeFragment?.back()
-                    else -> throw IllegalStateException()
+                    else -> this.activeFragment?.back()
                 }
             }
     }
@@ -185,10 +185,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 .flowForResult()
                 .ensure {
                     activeFragment = null
-
-                    if (isDialog) {
-                        activeDialogFragment = null
-                    }
+                    activeDialogFragment = null
                 }
 
             return try {
