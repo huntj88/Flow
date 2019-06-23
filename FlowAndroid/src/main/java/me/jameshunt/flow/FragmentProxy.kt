@@ -64,6 +64,7 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
     }
 
     internal fun fail(error: Throwable) {
+        state = null
         this.deferredPromise.reject(error)
     }
 }

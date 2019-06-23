@@ -132,10 +132,6 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     // promise wrapper around business flow to handle android back, even though BusinessFlowControllers
     // don't have a concept of going back
     private var businessDeferred: DeferredPromise<FlowResult<Any?>> = DeferredPromise()
-        get() {
-            field = if (field.promise.isPending) field else DeferredPromise()
-            return field
-        }
 
     private inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
@@ -177,10 +173,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 .fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this@FragmentFlowController.viewId)
                 .flowForResult()
-                .ensure {
-                    activeFragment = null
-                    activeDialogFragment = null
-                }
+                .ensure { activeDialogFragment = null }
 
             return try {
                 when (FlowManager.rootViewManager.isViewVisible(viewId)) {
@@ -234,8 +227,6 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             val flowController = controller.newInstance()
             childFlows.add(flowController)
 
-            activeFragment = FlowManager.fragmentDisplayManager.getVisibleFragmentProxy(viewId)
-
             // businessDeferred is resolvable outside of newly launched flow to handle android back
             flowController.launchFlow(input)
                 .done { businessDeferred.resolve(FlowResult.Completed(it)) }
@@ -243,7 +234,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             return businessDeferred.promise.ensure {
                 childFlows.remove(flowController)
-                activeFragment = null
+                businessDeferred = DeferredPromise()
             } as Promise<FlowResult<NewOutput>>
         }
     }
