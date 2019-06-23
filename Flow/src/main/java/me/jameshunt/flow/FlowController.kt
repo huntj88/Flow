@@ -13,7 +13,7 @@ abstract class FlowController<Input, Output> {
         val output: Output
     }
 
-    private val resultPromise: DeferredPromise<Output> = DeferredPromise()
+    internal val resultPromise: DeferredPromise<Output> = DeferredPromise()
 
     val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 

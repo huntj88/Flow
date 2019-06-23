@@ -1,6 +1,7 @@
 package me.jameshunt.flow
 
 import com.inmotionsoftware.promisekt.Promise
+import java.util.concurrent.atomic.AtomicBoolean
 
 interface BusinessFlowFunctions {
     fun <NewInput, NewOutput, Controller> flow(
@@ -19,6 +20,21 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
         input: NewInput
     ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
         return flowFunctions.flow(controller = controller, input = input)
+    }
+
+    private val cancelled = AtomicBoolean(false)
+    protected fun <T> Promise<T>.handleFlowCancel(): Promise<T> {
+        when (cancelled.get()) {
+            true -> this@handleFlowCancel.cancel()
+            false -> resultPromise.promise.apply {
+                this@apply.onCancel {
+                    cancelled.set(true)
+                    this@handleFlowCancel.cancel()
+                }
+            }
+        }
+
+        return this
     }
 
     private inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {

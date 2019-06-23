@@ -228,12 +228,15 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             childFlows.add(flowController)
 
             // businessDeferred is resolvable outside of newly launched flow to handle android back
-            flowController.launchFlow(input)
+            val childPromise = flowController.launchFlow(input)
+
+            childPromise
                 .done { businessDeferred.resolve(FlowResult.Completed(it)) }
                 .catch { businessDeferred.reject(it) }
 
             return businessDeferred.promise.ensure {
                 childFlows.remove(flowController)
+                childPromise.cancel()
                 businessDeferred = DeferredPromise()
             } as Promise<FlowResult<NewOutput>>
         }
