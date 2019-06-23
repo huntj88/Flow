@@ -80,16 +80,7 @@ class TestFlowFunctions : AndroidFlowFunctions {
         controller: Class<Controller>,
         input: NewInput
     ): Promise<FlowResult<NewOutput>> {
-        val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
-
-        return try {
-            val output = computeOutput?.invoke(input)
-                ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
-
-            Promise.value(FlowResult.Completed(output))
-        } catch (e: Exception) {
-            Promise(e)
-        }
+        return getAndroidFlowMock(controller as Class<Any>, input)
     }
 }
 
