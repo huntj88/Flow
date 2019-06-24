@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
+import java.util.concurrent.Semaphore
 
 internal object FlowManager {
 
@@ -32,11 +33,12 @@ internal object FlowManager {
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
 
-        when (shouldResume) {
-            true -> this.resumeActiveFlowControllers()
-            false -> this.rootFlow = flowActivity.getInitialGroupFlow().also { rootFlow ->
-                CoroutineScope(Dispatchers.Main).launch {
-                    rootFlow.launchFlow(flowActivity.getInitialArgs())
+        CoroutineScope(Dispatchers.Main).launch {
+            when (shouldResume) {
+                true -> this@FlowManager.resumeActiveFlowControllers()
+                false -> {
+                    this@FlowManager.rootFlow = flowActivity.getInitialGroupFlow()
+                    (this@FlowManager.rootFlow as SimpleGroupController<DeepLinkData, Unit>).launchFlow(flowActivity.getInitialArgs())
                     this@FlowManager.rootFlow = null
                     flowActivity.onFlowFinished()
                     println("flow completed")
@@ -49,7 +51,7 @@ internal object FlowManager {
         (rootFlow as AndroidFlowController<*, *>).handleBack()
     }
 
-    fun resumeActiveFlowControllers() {
+    suspend fun resumeActiveFlowControllers() {
         fragmentDisplayManager.removeAll()
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()

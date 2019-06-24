@@ -24,16 +24,14 @@ class BusinessFlowControllerTest {
 }
 
 private class FlowOne : BusinessFlowController<Unit, Unit>() {
-    override fun onStart(state: InitialState<Unit>) {
-        runBlocking {
-            this@FlowOne.flow(FlowTwo::class.java, Unit)
-            this@FlowOne.onDone(Unit)
-        }
+    override suspend fun onStart(state: InitialState<Unit>) {
+        this@FlowOne.flow(FlowTwo::class.java, Unit)
+        this@FlowOne.onDone(Unit)
     }
 }
 
 private class FlowTwo : BusinessFlowController<Unit, Unit>() {
-    override fun onStart(state: InitialState<Unit>) {
+    override suspend fun onStart(state: InitialState<Unit>) {
         this.onDone(Unit)
     }
 }

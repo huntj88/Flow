@@ -80,7 +80,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
      * the fragment reattaches itself to the existing promise
      */
 
-    final override fun resume() {
+    final override suspend fun resume() {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
             fun showFragment() = FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,

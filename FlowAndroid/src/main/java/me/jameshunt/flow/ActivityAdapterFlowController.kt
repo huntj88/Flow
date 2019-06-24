@@ -2,8 +2,6 @@ package me.jameshunt.flow
 
 import android.content.Context
 import android.content.Intent
-import com.inmotionsoftware.promisekt.Promise
-import com.inmotionsoftware.promisekt.done
 
 abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowController<Input, Output>() {
 

@@ -4,7 +4,7 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
 
     interface BackState
 
-    internal abstract fun resume()
+    internal abstract suspend fun resume()
 
     internal abstract fun handleBack()
 
@@ -21,4 +21,12 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
 //            }
 //        }
 //        .recover { onCatch(it) }
+
+    protected suspend fun <Result, From> FlowResult<Result>.forResult(
+        onBack: suspend () -> From = { throw NotImplementedError("onBack") },
+        onComplete: suspend (Result) -> From = { throw NotImplementedError("onComplete") }
+    ): From = when(this) {
+        is FlowResult.Completed -> onComplete(this.data)
+        is FlowResult.Back -> onBack()
+    }
 }

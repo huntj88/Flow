@@ -1,9 +1,6 @@
 package me.jameshunt.flow
 
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 abstract class FlowController<Input, Output> {
 
@@ -30,9 +27,7 @@ abstract class FlowController<Input, Output> {
     }
 
     open suspend fun launchFlow(input: Input): Output {
-        CoroutineScope(Dispatchers.Main).launch {
-            onStart(InitialState(input))
-        }
+        onStart(InitialState(input))
         return outputDeferred.await()
     }
 }

@@ -65,9 +65,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
             .handleBack()
     }
 
-    final override fun resume() {
-        CoroutineScope(Dispatchers.Main).launch {
-            onStart(initialState as InitialState<Input>)
-        }
+    final override suspend fun resume() {
+        onStart(initialState as InitialState<Input>)
     }
 }

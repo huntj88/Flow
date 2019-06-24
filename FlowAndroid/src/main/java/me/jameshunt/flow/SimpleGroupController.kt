@@ -1,7 +1,5 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.Promise
-
 class SimpleGroupController<Input, Output> :
     FragmentGroupFlowController<SimpleGroupController.SimpleGroupInput<Input, Output>, Output>(R.layout.group_simple) {
 

@@ -18,7 +18,7 @@ class FlowControllerTest {
     @Test
     fun testResolveDone() {
         val testFlow = object : FlowController<Unit, Unit>() {
-            override fun onStart(state: InitialState<Unit>) {
+            override suspend fun onStart(state: InitialState<Unit>) {
                 onDone(Unit)
             }
         }
@@ -32,7 +32,7 @@ class FlowControllerTest {
     @Test
     fun testResolveCatch() {
         val testFlow = object : FlowController<Unit, Unit>() {
-            override fun onStart(state: InitialState<Unit>) {
+            override suspend fun onStart(state: InitialState<Unit>) {
                 onCatch(IllegalStateException("OH NO"))
             }
         }
@@ -50,7 +50,7 @@ class FlowControllerTest {
     @Test
     fun testFlowTransform() {
         val testFlow = object : FlowController<Int, Int>() {
-            override fun onStart(state: InitialState<Int>) {
+            override suspend fun onStart(state: InitialState<Int>) {
                 onDone(state.input * 2)
             }
         }
