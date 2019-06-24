@@ -1,13 +1,12 @@
 package me.jameshunt.flow
 
 import androidx.fragment.app.Fragment
-import com.inmotionsoftware.promisekt.DeferredPromise
-import com.inmotionsoftware.promisekt.isPending
+import kotlinx.coroutines.CompletableDeferred
 import java.lang.ref.WeakReference
-import java.util.UUID
+import java.util.*
 
-fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> FragmentFlowController<*, *>
-        .proxy(clazz: Class<FragmentType>): FragmentProxy<FragInput, FragOutput, FragmentType> = FragmentProxy(clazz)
+fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> FragmentFlowController<*, *>.proxy(clazz: Class<FragmentType>): FragmentProxy<FragInput, FragOutput, FragmentType> =
+    FragmentProxy(clazz)
 
 class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>>(
     internal val clazz: Class<FragmentType>
@@ -21,9 +20,9 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
 
     internal var input: FragInput? = null
 
-    internal var deferredPromise: DeferredPromise<FlowResult<FragOutput>> = DeferredPromise()
+    internal var deferredOutput = CompletableDeferred<FlowResult<FragOutput>>()
         get() {
-            field = if (field.promise.isPending) field else DeferredPromise()
+            field = if (field.isCompleted) CompletableDeferred() else field
             return field
         }
 
@@ -55,16 +54,16 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
 
     internal fun resolve(output: FragOutput) {
         saveState()
-        this.deferredPromise.resolve(FlowResult.Completed(output))
+        this.deferredOutput.complete(FlowResult.Completed(output))
     }
 
     internal fun back() {
         saveState()
-        this.deferredPromise.resolve(FlowResult.Back)
+        this.deferredOutput.complete(FlowResult.Back)
     }
 
     internal fun fail(error: Throwable) {
         state = null
-        this.deferredPromise.reject(error)
+        this.deferredOutput.completeExceptionally(error)
     }
 }

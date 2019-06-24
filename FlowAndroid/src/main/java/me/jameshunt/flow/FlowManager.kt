@@ -1,6 +1,8 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.catch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
 
@@ -33,14 +35,12 @@ internal object FlowManager {
         when (shouldResume) {
             true -> this.resumeActiveFlowControllers()
             false -> this.rootFlow = flowActivity.getInitialGroupFlow().also { rootFlow ->
-                rootFlow
-                    .launchFlow(flowActivity.getInitialArgs())
-                    .catch { it.printStackTrace() }
-                    .finally {
-                        this.rootFlow = null
-                        this.flowActivity.onFlowFinished()
-                        println("flow completed")
-                    }
+                CoroutineScope(Dispatchers.Main).launch {
+                    rootFlow.launchFlow(flowActivity.getInitialArgs())
+                    this@FlowManager.rootFlow = null
+                    flowActivity.onFlowFinished()
+                    println("flow completed")
+                }
             }
         }
     }
@@ -66,12 +66,14 @@ internal object FlowManager {
     fun retryUncommittedFragmentTransactions() {
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
 
-        flowGroup
-            .childFlows
-            .map { it as FragmentFlowController<*, *> }
-            .mapNotNull { it.getFragmentFlowLeaf() }
-            .mapNotNull { it.uncommittedTransaction }
-            .forEach { transaction -> transaction() }
+        CoroutineScope(Dispatchers.Main).launch {
+            flowGroup
+                .childFlows
+                .map { it as FragmentFlowController<*, *> }
+                .mapNotNull { it.getFragmentFlowLeaf() }
+                .mapNotNull { it.uncommittedTransaction }
+                .forEach { transaction -> transaction() }
+        }
     }
 
     private fun FragmentGroupFlowController<*, *>.findGroup(): FragmentGroupFlowController<*, *> {
@@ -104,7 +106,8 @@ internal object FlowManager {
             true -> this
 
             // fragmentFlowControllers will only ever have one child
-            false -> (childFlows.mapNotNull { it as? FragmentFlowController<*, *> }.firstOrNull())?.getFragmentFlowLeaf() ?: this
+            false -> (childFlows.mapNotNull { it as? FragmentFlowController<*, *> }.firstOrNull())?.getFragmentFlowLeaf()
+                ?: this
         }
     }
 }

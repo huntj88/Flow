@@ -1,7 +1,9 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.DeferredPromise
-import com.inmotionsoftware.promisekt.Promise
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 abstract class FlowController<Input, Output> {
 
@@ -13,22 +15,24 @@ abstract class FlowController<Input, Output> {
         val output: Output
     }
 
-    private val resultPromise: DeferredPromise<Output> = DeferredPromise()
+    private val outputDeferred: CompletableDeferred<Output> = CompletableDeferred()
 
     val childFlows: MutableList<FlowController<*, *>> = mutableListOf()
 
-    protected abstract fun onStart(state: InitialState<Input>)
+    protected abstract suspend fun onStart(state: InitialState<Input>)
 
     protected fun onDone(output: Output) {
-        this.resultPromise.resolve(output)
+        outputDeferred.complete(output)
     }
 
     protected fun onCatch(e: Throwable) {
-        this.resultPromise.reject(e)
+        outputDeferred.completeExceptionally(e)
     }
 
-    open fun launchFlow(input: Input): Promise<Output> {
-        this.onStart(InitialState(input))
-        return this.resultPromise.promise
+    open suspend fun launchFlow(input: Input): Output {
+        CoroutineScope(Dispatchers.Main).launch {
+            onStart(InitialState(input))
+        }
+        return outputDeferred.await()
     }
 }

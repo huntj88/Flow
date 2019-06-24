@@ -8,21 +8,21 @@ import com.inmotionsoftware.promisekt.Promise
 interface FlowUI<Input, Output> {
     var proxy: FragmentProxy<Input, Output, *>?
 
-    fun flowForResult(): Promise<FlowResult<Output>>
+    suspend fun flowForResult(): FlowResult<Output>
 }
 
 abstract class FlowFragment<Input, Output> : Fragment(), FlowUI<Input, Output> {
 
     override var proxy: FragmentProxy<Input, Output, *>? = null
 
-    final override fun flowForResult(): Promise<FlowResult<Output>> {
+    final override suspend fun flowForResult(): FlowResult<Output> {
         val input = proxy!!.input as Input
 
         this.view?.let {
             this.flowWillRun(input)
         }
 
-        return proxy!!.deferredPromise.promise
+        return proxy!!.deferredOutput.await()
     }
 
     abstract fun flowWillRun(input: Input)
@@ -46,14 +46,14 @@ abstract class FlowFragment<Input, Output> : Fragment(), FlowUI<Input, Output> {
 abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Input, Output> {
     override var proxy: FragmentProxy<Input, Output, *>? = null
 
-    final override fun flowForResult(): Promise<FlowResult<Output>> {
+    final override suspend fun flowForResult(): FlowResult<Output> {
         val input = proxy!!.input as Input
 
         this.view?.let {
             this.flowWillRun(input)
         }
 
-        return proxy!!.deferredPromise.promise
+        return proxy!!.deferredOutput.await()
     }
 
     abstract fun flowWillRun(input: Input)

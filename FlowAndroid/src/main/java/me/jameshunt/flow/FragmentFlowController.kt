@@ -1,32 +1,32 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.*
+import kotlinx.coroutines.CompletableDeferred
 
 typealias ViewId = Int
 
 interface AndroidFlowFunctions {
-    fun <NewInput, NewOutput, Controller> flow(
+    suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>>
+    ): FlowResult<NewOutput>
             where Controller : FragmentFlowController<NewInput, NewOutput>
 
-    fun <FragInput, FragOutput, FragmentType> flow(
+    suspend fun <FragInput, FragOutput, FragmentType> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
-    ): Promise<FlowResult<FragOutput>>
+    ): FlowResult<FragOutput>
             where FragmentType : FlowUI<FragInput, FragOutput>
 
-    fun <GroupInput, GroupOutput, Controller> flowGroup(
+    suspend fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
-    ): Promise<FlowResult<GroupOutput>>
+    ): FlowResult<GroupOutput>
             where Controller : FragmentGroupFlowController<GroupInput, GroupOutput>
 
-    fun <NewInput, NewOutput, Controller> flowBusiness(
+    suspend fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>>
+    ): FlowResult<NewOutput>
             where Controller : BusinessFlowController<NewInput, NewOutput>
 }
 
@@ -40,37 +40,37 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     private var activeDialogFragment: FragmentProxy<*, *, *>? = null
 
-    internal var uncommittedTransaction: (() -> Unit)? = null
+    internal var uncommittedTransaction: (suspend () -> Unit)? = null
         private set
 
-    protected fun <FragInput, FragOutput, FragmentType> flow(
+    protected suspend fun <FragInput, FragOutput, FragmentType> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
-    ): Promise<FlowResult<FragOutput>>
+    ): FlowResult<FragOutput>
             where FragmentType : FlowUI<FragInput, FragOutput> {
         return flowFunctions.flow(fragmentProxy = fragmentProxy, input = input)
     }
 
-    protected fun <NewInput, NewOutput, Controller> flow(
+    protected suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>>
+    ): FlowResult<NewOutput>
             where Controller : FragmentFlowController<NewInput, NewOutput> {
         return flowFunctions.flow(controller = controller, input = input)
     }
 
-    protected fun <GroupInput, GroupOutput, Controller> flowGroup(
+    protected suspend fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
-    ): Promise<FlowResult<GroupOutput>>
+    ): FlowResult<GroupOutput>
             where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
         return flowFunctions.flowGroup(controller = controller, input = input)
     }
 
-    protected fun <NewInput, NewOutput, Controller> flowBusiness(
+    protected suspend fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>>
+    ): FlowResult<NewOutput>
             where Controller : BusinessFlowController<NewInput, NewOutput> {
         return flowFunctions.flowBusiness(controller = controller, input = input)
     }
@@ -123,7 +123,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             .let {
                 when (it) {
                     is AndroidFlowController<*, *> -> it.handleBack()
-                    is BusinessFlowController<*, *> -> businessDeferred.resolve(FlowResult.Back)
+                    is BusinessFlowController<*, *> -> businessDeferred.complete(FlowResult.Back)
                     else -> this.activeFragment?.back()
                 }
             }
@@ -131,14 +131,14 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     // promise wrapper around business flow to handle android back, even though BusinessFlowControllers
     // don't have a concept of going back
-    private var businessDeferred: DeferredPromise<FlowResult<Any?>> = DeferredPromise()
+    private var businessDeferred: CompletableDeferred<FlowResult<Any?>> = CompletableDeferred()
 
     private inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
-        override fun <NewInput, NewOutput, Controller> flow(
+        override suspend fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<FlowResult<NewOutput>>
+        ): FlowResult<NewOutput>
                 where Controller : FragmentFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance().apply {
@@ -148,15 +148,15 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             childFlows.add(flowController)
 
-            return flowController.launchFlow(input).ensure {
+            return flowController.launchFlow(input).also {
                 childFlows.remove(flowController)
             }
         }
 
-        override fun <FragInput, FragOutput, FragmentType> flow(
+        override suspend fun <FragInput, FragOutput, FragmentType> flow(
             fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
             input: FragInput
-        ): Promise<FlowResult<FragOutput>>
+        ): FlowResult<FragOutput>
                 where FragmentType : FlowUI<FragInput, FragOutput> {
 
             val isDialog = FlowDialogFragment::class.java.isAssignableFrom(fragmentProxy.clazz)
@@ -169,11 +169,11 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 false -> activeFragment = fragmentProxy.also { it.input = input }
             }
 
-            fun showFragmentForResult(): Promise<FlowResult<FragOutput>> = FlowManager
+            suspend fun showFragmentForResult(): FlowResult<FragOutput> = FlowManager
                 .fragmentDisplayManager
                 .show(fragmentProxy = fragmentProxy, viewId = this@FragmentFlowController.viewId)
                 .flowForResult()
-                .ensure { activeDialogFragment = null }
+                .also { activeDialogFragment = null }
 
             return try {
                 when (FlowManager.rootViewManager.isViewVisible(viewId)) {
@@ -190,17 +190,18 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 // from committing transaction after onSavedInstanceState,
                 // or view does not exist
                 uncommittedTransaction = {
-                    showFragmentForResult().ensure { uncommittedTransaction = null }
+                    showFragmentForResult()
+                    uncommittedTransaction = null
                 }
 
-                fragmentProxy.deferredPromise.promise
+                fragmentProxy.deferredOutput.await()
             }
         }
 
-        override fun <GroupInput, GroupOutput, Controller> flowGroup(
+        override suspend fun <GroupInput, GroupOutput, Controller> flowGroup(
             controller: Class<Controller>,
             input: GroupInput
-        ): Promise<FlowResult<GroupOutput>>
+        ): FlowResult<GroupOutput>
                 where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
 
             // remove all the fragments from this flowController before starting the next FlowController
@@ -212,30 +213,33 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             childFlows.add(flowController)
 
-            return flowController.launchFlow(input).ensure {
+            return flowController.launchFlow(input).also {
                 childFlows.remove(flowController)
                 FlowManager.resumeActiveFlowControllers()
             }
         }
 
-        override fun <NewInput, NewOutput, Controller> flowBusiness(
+        override suspend fun <NewInput, NewOutput, Controller> flowBusiness(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<FlowResult<NewOutput>>
+        ): FlowResult<NewOutput>
                 where Controller : BusinessFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance()
             childFlows.add(flowController)
 
             // businessDeferred is resolvable outside of newly launched flow to handle android back
-            flowController.launchFlow(input)
-                .done { businessDeferred.resolve(FlowResult.Completed(it)) }
-                .catch { businessDeferred.reject(it) }
+            try {
+                val flowResult = flowController.launchFlow(input)
+                businessDeferred.complete(FlowResult.Completed(flowResult))
+            } catch (t: Throwable) {
+                businessDeferred.completeExceptionally(t)
+            }
 
-            return businessDeferred.promise.ensure {
+            return (businessDeferred.await() as FlowResult<NewOutput>).also {
                 childFlows.remove(flowController)
-                businessDeferred = DeferredPromise()
-            } as Promise<FlowResult<NewOutput>>
+                businessDeferred = CompletableDeferred()
+            }
         }
     }
 }

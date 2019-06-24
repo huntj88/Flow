@@ -7,13 +7,13 @@ import com.inmotionsoftware.promisekt.done
 
 abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowController<Input, Output>() {
 
-    override fun onStart(state: InitialState<Input>) {
+    override suspend fun onStart(state: InitialState<Input>) {
         val activity = FlowManager.activityForResultManager.flowActivity
-        handleIOActivityIntents(context = activity, flowInput = state.input).done {
-            when (it) {
-                is FlowResult.Completed -> this.onDone(FlowResult.Completed(it.data))
-                is FlowResult.Back -> super.onDone(FlowResult.Back)
-            }
+        val activityResult = handleIOActivityIntents(context = activity, flowInput = state.input)
+
+        when (activityResult) {
+            is FlowResult.Completed -> this.onDone(FlowResult.Completed(activityResult.data))
+            is FlowResult.Back -> this.onDone(FlowResult.Back)
         }
     }
 
@@ -28,12 +28,12 @@ abstract class ActivityAdapterFlowController<Input, Output> : FragmentFlowContro
      * Instead of keeping a reference to a context,
      * invoke the context lambda as many times a needed
      */
-    abstract fun handleIOActivityIntents(context: () -> Context, flowInput: Input): Promise<FlowResult<Output>>
+    abstract suspend fun handleIOActivityIntents(context: () -> Context, flowInput: Input): FlowResult<Output>
 
-    protected fun <Output> flow(
+    protected suspend fun <Output> flow(
         activityIntent: Intent,
         handleResult: (result: Intent) -> Output
-    ): Promise<FlowResult<Output>> {
+    ): FlowResult<Output> {
         return FlowManager.activityForResultManager.activityForResult(
             intent = activityIntent,
             handleResult = handleResult

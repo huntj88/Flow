@@ -15,16 +15,16 @@ fun BusinessFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Uni
         conf.Q = PMKConfiguration.Value(null, null)
     }
 
-    BackgroundTask::class
-        .companionObject!!
-        .memberProperties
-        .first { it.name == "backgroundExecutor" }
-        .let { companionExecutor ->
-            if (companionExecutor is KMutableProperty<*>) {
-                val instance = BackgroundTask::class.companionObjectInstance
-                companionExecutor.setter.call(instance, null)
-            }
-        }
+//    BackgroundTask::class
+//        .companionObject!!
+//        .memberProperties
+//        .first { it.name == "backgroundExecutor" }
+//        .let { companionExecutor ->
+//            if (companionExecutor is KMutableProperty<*>) {
+//                val instance = BackgroundTask::class.companionObjectInstance
+//                companionExecutor.setter.call(instance, null)
+//            }
+//        }
 
     // set TestFlowFunctions for mocking fragments and other flowControllers
     BusinessFlowController::class.java.getDeclaredField("flowFunctions").let {
@@ -44,20 +44,14 @@ class TestFlowFunctions : BusinessFlowFunctions {
         mockedResults[controller as Class<Any>] = thenReturn as (Any?) -> Any?
     }
 
-    override fun <NewInput, NewOutput, Controller : BusinessFlowController<NewInput, NewOutput>> flow(
+    override suspend fun <NewInput, NewOutput, Controller : BusinessFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput> {
+    ): NewOutput {
         val computeOutput = mockedResults[controller as Class<Any>] as? (NewInput) -> NewOutput
 
-        return try {
-            val output = computeOutput?.invoke(input)
-                ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
-
-            Promise.value(output)
-        } catch (e: Exception) {
-            Promise(e)
-        }
+        return computeOutput?.invoke(input)
+            ?: throw IllegalArgumentException("Mock not setup for ${controller.simpleName}")
     }
 }
 

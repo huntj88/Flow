@@ -1,39 +1,37 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.Promise
-
 interface BusinessFlowFunctions {
-    fun <NewInput, NewOutput, Controller> flow(
+    suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput>
+    ): NewOutput
             where Controller : BusinessFlowController<NewInput, NewOutput>
 }
 
-abstract class BusinessFlowController<Input, Output> : FlowController<Input, Output>(), BackgroundTask {
+abstract class BusinessFlowController<Input, Output> : FlowController<Input, Output>() {
 
     private var flowFunctions: BusinessFlowFunctions = BusinessFlowFunctionsImpl()
 
-    protected fun <NewInput, NewOutput, Controller> flow(
+    protected suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
+    ): NewOutput where Controller : BusinessFlowController<NewInput, NewOutput> {
         return flowFunctions.flow(controller = controller, input = input)
     }
 
     private inner class BusinessFlowFunctionsImpl : BusinessFlowFunctions {
-        override fun <NewInput, NewOutput, Controller> flow(
+        override suspend fun <NewInput, NewOutput, Controller> flow(
             controller: Class<Controller>,
             input: NewInput
-        ): Promise<NewOutput> where Controller : BusinessFlowController<NewInput, NewOutput> {
+        ): NewOutput where Controller : BusinessFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance()
 
             childFlows.add(flowController)
+            val output = flowController.launchFlow(input)
+            childFlows.remove(flowController)
 
-            return flowController.launchFlow(input).ensure {
-                childFlows.remove(flowController)
-            }
+            return output
         }
     }
 }

@@ -4,6 +4,7 @@ import com.inmotionsoftware.promisekt.PMKConfiguration
 import com.inmotionsoftware.promisekt.catch
 import com.inmotionsoftware.promisekt.conf
 import com.inmotionsoftware.promisekt.done
+import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -22,10 +23,10 @@ class FlowControllerTest {
             }
         }
 
-        testFlow
-            .launchFlow(Unit)
-            .done { assertTrue(true) }
-            .catch { fail(it.toString()) }
+        runBlocking {
+            testFlow.launchFlow(Unit)
+            assertTrue(true)
+        }
     }
 
     @Test
@@ -36,10 +37,14 @@ class FlowControllerTest {
             }
         }
 
-        testFlow
-            .launchFlow(Unit)
-            .done { fail() }
-            .catch { assertTrue(true) }
+        runBlocking {
+            try {
+                testFlow.launchFlow(Unit)
+                fail()
+            } catch (e: IllegalStateException) {
+                assertTrue(true)
+            }
+        }
     }
 
     @Test
@@ -50,9 +55,9 @@ class FlowControllerTest {
             }
         }
 
-        testFlow
-            .launchFlow(2)
-            .done { assertEquals("double the input", 4, it) }
-            .catch { fail() }
+        runBlocking {
+            val output = testFlow.launchFlow(2)
+            assertEquals("double the input", 4, output)
+        }
     }
 }

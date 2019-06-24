@@ -23,11 +23,13 @@ class SimpleGroupController<Input, Output> :
         val input: Input
     )
 
-    override fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): Promise<State> {
-        return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).forResult<Output, State>(
-            onBack = { Promise.value(Back) },
-            onComplete = { Promise.value(Done(it)) }
-        )
+    override suspend fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): State {
+        return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).let {
+            when(it) {
+                is FlowResult.Completed -> Done(it)
+                is FlowResult.Back -> Back
+            }
+        }
     }
 }
 
