@@ -27,8 +27,8 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
         tag: String
     ): FragmentType {
         fragmentManager
-            .beginTransaction()
-            .setCustomAnimations(R.anim.abc_grow_fade_in_from_bottom, R.anim.abc_shrink_fade_out_from_bottom)
+            .beginTransaction() // TODO
+            //.setCustomAnimations(R.anim.abc_grow_fade_in_from_bottom, R.anim.abc_shrink_fade_out_from_bottom)
             .replace(viewId, fragment as Fragment, tag)
             .commit()
 
