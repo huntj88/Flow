@@ -46,33 +46,33 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
     protected suspend fun <FragInput, FragOutput, FragmentType> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
-    ): FlowResult<FragOutput>
+    ): suspend () -> FlowResult<FragOutput>
             where FragmentType : FlowUI<FragInput, FragOutput> {
-        return flowFunctions.flow(fragmentProxy = fragmentProxy, input = input)
+        return { flowFunctions.flow(fragmentProxy = fragmentProxy, input = input) }
     }
 
     protected suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): FlowResult<NewOutput>
+    ): suspend () -> FlowResult<NewOutput>
             where Controller : FragmentFlowController<NewInput, NewOutput> {
-        return flowFunctions.flow(controller = controller, input = input)
+        return { flowFunctions.flow(controller = controller, input = input) }
     }
 
     protected suspend fun <GroupInput, GroupOutput, Controller> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
-    ): FlowResult<GroupOutput>
+    ): suspend () -> FlowResult<GroupOutput>
             where Controller : FragmentGroupFlowController<GroupInput, GroupOutput> {
-        return flowFunctions.flowGroup(controller = controller, input = input)
+        return { flowFunctions.flowGroup(controller = controller, input = input) }
     }
 
     protected suspend fun <NewInput, NewOutput, Controller> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): FlowResult<NewOutput>
+    ): suspend () -> FlowResult<NewOutput>
             where Controller : BusinessFlowController<NewInput, NewOutput> {
-        return flowFunctions.flowBusiness(controller = controller, input = input)
+        return { flowFunctions.flowBusiness(controller = controller, input = input) }
     }
 
     /**
@@ -148,8 +148,13 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             childFlows.add(flowController)
 
-            return flowController.launchFlow(input).also {
+            return try {
+                flowController.launchFlow(input).also {
+                    childFlows.remove(flowController)
+                }
+            } catch (t: Throwable) {
                 childFlows.remove(flowController)
+                throw t
             }
         }
 
@@ -186,15 +191,22 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                     }
                 }
             } catch (e: IllegalStateException) {
-                e.printStackTrace()
-                // from committing transaction after onSavedInstanceState,
-                // or view does not exist
-                uncommittedTransaction = {
-                    showFragmentForResult()
-                    uncommittedTransaction = null
-                }
+                val viewDoesNotExist = e.message?.contains("View does not exist for fragment") ?: false
+                val afterOnSaveInstanceState = e.message?.contains("onSavedInstanceState") ?: false
 
-                fragmentProxy.deferredOutput.await()
+                if (viewDoesNotExist || afterOnSaveInstanceState) {
+                    e.printStackTrace()
+                    // from committing transaction after onSavedInstanceState,
+                    // or view does not exist
+                    uncommittedTransaction = {
+                        showFragmentForResult()
+                        uncommittedTransaction = null
+                    }
+
+                    fragmentProxy.deferredOutput.await()
+                } else {
+                    throw e
+                }
             }
         }
 
@@ -213,9 +225,15 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
             childFlows.add(flowController)
 
-            return flowController.launchFlow(input).also {
+            return try {
+                flowController.launchFlow(input).also {
+                    childFlows.remove(flowController)
+                    FlowManager.resumeActiveFlowControllers()
+                }
+            } catch (t: Throwable) {
                 childFlows.remove(flowController)
                 FlowManager.resumeActiveFlowControllers()
+                throw t
             }
         }
 
@@ -236,9 +254,15 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 businessDeferred.completeExceptionally(t)
             }
 
-            return (businessDeferred.await() as FlowResult<NewOutput>).also {
+            return try {
+                (businessDeferred.await() as FlowResult<NewOutput>).also {
+                    childFlows.remove(flowController)
+                    businessDeferred = CompletableDeferred()
+                }
+            } catch (t: Throwable) {
                 childFlows.remove(flowController)
                 businessDeferred = CompletableDeferred()
+                throw t
             }
         }
     }

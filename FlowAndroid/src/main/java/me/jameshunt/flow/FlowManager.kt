@@ -3,9 +3,9 @@ package me.jameshunt.flow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
-import java.util.concurrent.Semaphore
 
 internal object FlowManager {
 
@@ -19,9 +19,6 @@ internal object FlowManager {
     private val flowActivity: FlowActivity<*>
         get() = transientActivity.get() ?: throw IllegalStateException("Should never be null")
 
-    private val shouldResume: Boolean
-        get() = this.rootFlow != null
-
     val fragmentDisplayManager: FragmentDisplayManager
         get() = flowActivity.fragmentDisplayManager
 
@@ -32,17 +29,21 @@ internal object FlowManager {
 
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
+        val shouldResume = rootFlow != null
 
-        CoroutineScope(Dispatchers.Main).launch {
-            when (shouldResume) {
+        runBlocking {
+            when(shouldResume) {
                 true -> this@FlowManager.resumeActiveFlowControllers()
-                false -> {
-                    this@FlowManager.rootFlow = flowActivity.getInitialGroupFlow()
-                    (this@FlowManager.rootFlow as SimpleGroupController<DeepLinkData, Unit>).launchFlow(flowActivity.getInitialArgs())
-                    this@FlowManager.rootFlow = null
-                    flowActivity.onFlowFinished()
-                    println("flow completed")
-                }
+                false -> this@FlowManager.rootFlow = flowActivity.getInitialGroupFlow()
+            }
+        }
+
+        if(!shouldResume) {
+            CoroutineScope(Dispatchers.Main).launch {
+                (this@FlowManager.rootFlow as SimpleGroupController<DeepLinkData, Unit>).launchFlow(flowActivity.getInitialArgs())
+                this@FlowManager.rootFlow = null
+                flowActivity.onFlowFinished()
+                println("flow completed")
             }
         }
     }

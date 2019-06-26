@@ -8,25 +8,25 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
 
     internal abstract fun handleBack()
 
-    // Inlining this gives better errors about where the error happened
-//    protected inline fun <Result, From> Promise<FlowResult<Result>>.forResult(
-//        crossinline onBack: () -> Promise<From> = { throw NotImplementedError("onBack") },
-//        crossinline onComplete: (Result) -> Promise<From> = { throw NotImplementedError("onComplete") },
-//        crossinline onCatch: ((Throwable) -> Promise<From>) = { throw it }
-//    ): Promise<From> = this
-//        .thenMap {
-//            when (it) {
-//                is FlowResult.Back -> onBack()
-//                is FlowResult.Completed -> onComplete(it.data)
-//            }
-//        }
-//        .recover { onCatch(it) }
-
+    // todo: get rid of this method
     protected suspend fun <Result, From> FlowResult<Result>.forResult(
         onBack: suspend () -> From = { throw NotImplementedError("onBack") },
         onComplete: suspend (Result) -> From = { throw NotImplementedError("onComplete") }
-    ): From = when(this) {
+    ): From = when (this) {
         is FlowResult.Completed -> onComplete(this.data)
         is FlowResult.Back -> onBack()
+    }
+
+    protected suspend fun <Result, From> (suspend () -> FlowResult<Result>).forResult(
+        onBack: suspend () -> From = { throw NotImplementedError("onBack") },
+        onComplete: suspend (Result) -> From = { throw NotImplementedError("onComplete") },
+        onRecover: suspend (Throwable) -> From = { throw RuntimeException("onRecover not implemented", it) }
+    ): From = try {
+        when (val results = this@forResult()) {
+            is FlowResult.Completed -> onComplete(results.data)
+            is FlowResult.Back -> onBack()
+        }
+    } catch (t: Throwable) {
+        onRecover(t)
     }
 }

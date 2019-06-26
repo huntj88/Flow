@@ -13,7 +13,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
     protected object Back : BackState, State
     protected data class Done<Output>(override val output: Output) : DoneState<Output>, State
 
-    private var groupResult: Deferred<State>? = null
+    private var isResumed = false
 
     private var initialState: InitialState<Input>? = null
 
@@ -22,15 +22,14 @@ abstract class FragmentGroupFlowController<Input, Output>(
         val layout = FlowManager.rootViewManager.setNewRoot(layoutId)
         setupGroup(layout)
 
-        if (groupResult != null) return
+        if (isResumed) return
 
-        groupResult = coroutineScope { async { startFlowInGroup(state.input)} }
-
-        when (val result = groupResult!!.await()) {
-            is Back -> super.onDone(FlowResult.Back)
+        // todo error handling
+        when (val result = startFlowInGroup(state.input)) {
+            is Back -> this.onDone(FlowResult.Back)
             is Done<*> -> {
                 val output = FlowResult.Completed(result.output) as FlowResult<Output>
-                super.onDone(output)
+                this.onDone(output)
             }
         }
     }
@@ -66,6 +65,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
     }
 
     final override suspend fun resume() {
+        isResumed = true
         onStart(initialState as InitialState<Input>)
     }
 }

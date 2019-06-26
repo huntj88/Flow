@@ -22,12 +22,10 @@ class SimpleGroupController<Input, Output> :
     )
 
     override suspend fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): State {
-        return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).let {
-            when(it) {
-                is FlowResult.Completed -> Done(it)
-                is FlowResult.Back -> Back
-            }
-        }
+        return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).forResult(
+            onBack = { Back },
+            onComplete = { Done(it) }
+        )
     }
 }
 
