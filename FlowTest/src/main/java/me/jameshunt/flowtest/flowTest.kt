@@ -1,30 +1,9 @@
 package me.jameshunt.flowtest
 
-import com.inmotionsoftware.promisekt.PMKConfiguration
-import com.inmotionsoftware.promisekt.Promise
-import com.inmotionsoftware.promisekt.conf
-import me.jameshunt.flow.*
 import me.jameshunt.flow.BusinessFlowController
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.full.companionObject
-import kotlin.reflect.full.companionObjectInstance
-import kotlin.reflect.full.memberProperties
+import me.jameshunt.flow.BusinessFlowFunctions
 
 fun BusinessFlowController<*, *>.flowTest(configure: TestFlowFunctions.() -> Unit) {
-    conf.Q.map?.let {
-        conf.Q = PMKConfiguration.Value(null, null)
-    }
-
-//    BackgroundTask::class
-//        .companionObject!!
-//        .memberProperties
-//        .first { it.name == "backgroundExecutor" }
-//        .let { companionExecutor ->
-//            if (companionExecutor is KMutableProperty<*>) {
-//                val instance = BackgroundTask::class.companionObjectInstance
-//                companionExecutor.setter.call(instance, null)
-//            }
-//        }
 
     // set TestFlowFunctions for mocking fragments and other flowControllers
     BusinessFlowController::class.java.getDeclaredField("flowFunctions").let {

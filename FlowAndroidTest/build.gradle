@@ -29,7 +29,6 @@ dependencies {
 
     implementation project(':FlowAndroid')
     implementation project(':Flow')
-    implementation project(':PromiseKt')
 
     implementation 'androidx.appcompat:appcompat:1.0.2'
     testImplementation 'junit:junit:4.12'

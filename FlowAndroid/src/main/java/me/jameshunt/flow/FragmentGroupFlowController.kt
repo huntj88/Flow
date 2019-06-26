@@ -1,10 +1,6 @@
 package me.jameshunt.flow
 
 import android.view.ViewGroup
-import com.inmotionsoftware.promisekt.Promise
-import com.inmotionsoftware.promisekt.ensure
-import com.inmotionsoftware.promisekt.map
-import kotlinx.coroutines.*
 
 abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId

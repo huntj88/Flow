@@ -149,12 +149,9 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             childFlows.add(flowController)
 
             return try {
-                flowController.launchFlow(input).also {
-                    childFlows.remove(flowController)
-                }
-            } catch (t: Throwable) {
+                flowController.launchFlow(input)
+            } finally {
                 childFlows.remove(flowController)
-                throw t
             }
         }
 
@@ -226,14 +223,10 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             childFlows.add(flowController)
 
             return try {
-                flowController.launchFlow(input).also {
-                    childFlows.remove(flowController)
-                    FlowManager.resumeActiveFlowControllers()
-                }
-            } catch (t: Throwable) {
+                flowController.launchFlow(input)
+            } finally {
                 childFlows.remove(flowController)
                 FlowManager.resumeActiveFlowControllers()
-                throw t
             }
         }
 
@@ -255,14 +248,10 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             }
 
             return try {
-                (businessDeferred.await() as FlowResult<NewOutput>).also {
-                    childFlows.remove(flowController)
-                    businessDeferred = CompletableDeferred()
-                }
-            } catch (t: Throwable) {
+                (businessDeferred.await() as FlowResult<NewOutput>)
+            } finally {
                 childFlows.remove(flowController)
                 businessDeferred = CompletableDeferred()
-                throw t
             }
         }
     }

@@ -4,14 +4,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
 
 internal object FlowManager {
-
-    init {
-        DispatchExecutor.setMainExecutor()
-    }
 
     private var rootFlow: AndroidFlowController<*, Unit>? = null
 

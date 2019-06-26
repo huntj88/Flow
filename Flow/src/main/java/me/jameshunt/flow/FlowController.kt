@@ -26,7 +26,7 @@ abstract class FlowController<Input, Output> {
         outputDeferred.completeExceptionally(e)
     }
 
-    open suspend fun launchFlow(input: Input): Output {
+    suspend fun launchFlow(input: Input): Output {
         onStart(InitialState(input))
         return outputDeferred.await()
     }

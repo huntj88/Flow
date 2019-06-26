@@ -4,7 +4,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
 //    testImplementation project(':FlowTest')
-    implementation project(':PromiseKt')
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.2'
     testImplementation 'junit:junit:4.12'
 }

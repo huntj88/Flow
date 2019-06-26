@@ -33,7 +33,6 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation project(':Flow')
-    implementation project(':PromiseKt')
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.2.2'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.2'

@@ -26,12 +26,13 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
         ): NewOutput where Controller : BusinessFlowController<NewInput, NewOutput> {
 
             val flowController = controller.newInstance()
-
             childFlows.add(flowController)
-            val output = flowController.launchFlow(input)
-            childFlows.remove(flowController)
 
-            return output
+            return try {
+                flowController.launchFlow(input)
+            } finally {
+                childFlows.remove(flowController)
+            }
         }
     }
 }
