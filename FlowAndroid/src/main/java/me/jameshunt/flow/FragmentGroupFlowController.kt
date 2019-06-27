@@ -38,17 +38,22 @@ abstract class FragmentGroupFlowController<Input, Output>(
         controller: Class<Controller>,
         viewId: ViewId,
         input: NewInput
-    ): FlowResult<NewOutput>
+    ): suspend () -> FlowResult<NewOutput>
             where Controller : FragmentFlowController<NewInput, NewOutput> {
+        return {
+            val flowController = controller.newInstance().apply {
+                this.viewId = viewId
+            }
 
-        val flowController = controller.newInstance().apply {
-            this.viewId = viewId
-        }
+            childFlows.add(flowController)
 
-        childFlows.add(flowController)
-
-        return flowController.launchFlow(input).also {
-            childFlows.remove(flowController)
+            try {
+                flowController.launchFlow(input)
+            } catch (t: Throwable) {
+                onCatch(t); Back as FlowResult<NewOutput> // back ignored
+            } finally {
+                childFlows.remove(flowController)
+            }
         }
     }
 
