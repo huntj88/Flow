@@ -1,5 +1,8 @@
 package me.jameshunt.flow
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 interface BusinessFlowFunctions {
     suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
@@ -24,14 +27,15 @@ abstract class BusinessFlowController<Input, Output> : FlowController<Input, Out
             controller: Class<Controller>,
             input: NewInput
         ): NewOutput where Controller : BusinessFlowController<NewInput, NewOutput> {
+            return withContext(Dispatchers.Default) {
+                val flowController = controller.newInstance()
+                childFlows.add(flowController)
 
-            val flowController = controller.newInstance()
-            childFlows.add(flowController)
-
-            return try {
-                flowController.launchFlow(input)
-            } finally {
-                childFlows.remove(flowController)
+                try {
+                    flowController.launchFlow(input)
+                } finally {
+                    childFlows.remove(flowController)
+                }
             }
         }
     }

@@ -1,5 +1,7 @@
 package me.jameshunt.flow
 
+import kotlinx.coroutines.CancellationException
+
 abstract class AndroidFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
 
     interface BackState
@@ -27,6 +29,9 @@ abstract class AndroidFlowController<Input, Output> : FlowController<Input, Flow
             is FlowResult.Back -> onBack()
         }
     } catch (t: Throwable) {
-        onRecover(t)
+        when(t) {
+            is CancellationException -> onBack() // result discarded, another flow resolved sooner, see awaitFirst()
+            else -> onRecover(t)
+        }
     }
 }

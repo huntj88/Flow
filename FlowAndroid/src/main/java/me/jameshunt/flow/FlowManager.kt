@@ -24,22 +24,18 @@ internal object FlowManager {
 
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
-        val shouldResume = rootFlow != null
 
-        runBlocking {
-            when(shouldResume) {
-                true -> this@FlowManager.resumeActiveFlowControllers()
-                false -> this@FlowManager.rootFlow = flowActivity.getInitialGroupFlow()
+        when (rootFlow == null) {
+            true -> {
+                this@FlowManager.rootFlow = flowActivity.getInitialGroupFlow()
+                CoroutineScope(Dispatchers.Main).launch {
+                    (this@FlowManager.rootFlow as SimpleGroupController<DeepLinkData, Unit>).launchFlow(flowActivity.getInitialArgs())
+                    this@FlowManager.rootFlow = null
+                    flowActivity.onFlowFinished()
+                    println("flow completed")
+                }
             }
-        }
-
-        if(!shouldResume) {
-            CoroutineScope(Dispatchers.Main).launch {
-                (this@FlowManager.rootFlow as SimpleGroupController<DeepLinkData, Unit>).launchFlow(flowActivity.getInitialArgs())
-                this@FlowManager.rootFlow = null
-                flowActivity.onFlowFinished()
-                println("flow completed")
-            }
+            false -> runBlocking { this@FlowManager.resumeActiveFlowControllers() }
         }
     }
 
@@ -64,7 +60,7 @@ internal object FlowManager {
     fun retryUncommittedFragmentTransactions() {
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()
 
-        CoroutineScope(Dispatchers.Main).launch {
+        runBlocking {
             flowGroup
                 .childFlows
                 .map { it as FragmentFlowController<*, *> }

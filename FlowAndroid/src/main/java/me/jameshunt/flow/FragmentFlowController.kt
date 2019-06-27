@@ -1,6 +1,6 @@
 package me.jameshunt.flow
 
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.*
 
 typealias ViewId = Int
 
@@ -90,7 +90,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             try {
                 showFragment()
             } catch (e: IllegalStateException) {
-                e.printStackTrace() // from committing transaction after onSavedInstanceState
+                e.isExpectedErrorOrThrow()
                 uncommittedTransaction = { showFragment(); uncommittedTransaction = null }
             }
         }
@@ -108,7 +108,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
             try {
                 showDialogFragment()
             } catch (e: IllegalStateException) {
-                e.printStackTrace() // from committing transaction after onSavedInstanceState
+                e.isExpectedErrorOrThrow()
                 uncommittedTransaction = {
                     uncommittedTransaction?.invoke() // show the fragment behind dialog
                     showDialogFragment()
@@ -131,7 +131,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     // promise wrapper around business flow to handle android back, even though BusinessFlowControllers
     // don't have a concept of going back
-    private var businessDeferred: CompletableDeferred<FlowResult<Any?>> = CompletableDeferred()
+    private var businessDeferred: CompletableDeferred<FlowResult<*>> = CompletableDeferred()
 
     private inner class AndroidFlowFunctionsImpl : AndroidFlowFunctions {
 
@@ -188,22 +188,14 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                     }
                 }
             } catch (e: IllegalStateException) {
-                val viewDoesNotExist = e.message?.contains("View does not exist for fragment") ?: false
-                val afterOnSaveInstanceState = e.message?.contains("onSavedInstanceState") ?: false
+                e.isExpectedErrorOrThrow()
 
-                if (viewDoesNotExist || afterOnSaveInstanceState) {
-                    e.printStackTrace()
-                    // from committing transaction after onSavedInstanceState,
-                    // or view does not exist
-                    uncommittedTransaction = {
-                        showFragmentForResult()
-                        uncommittedTransaction = null
-                    }
-
-                    fragmentProxy.deferredOutput.await()
-                } else {
-                    throw e
+                uncommittedTransaction = {
+                    showFragmentForResult()
+                    uncommittedTransaction = null
                 }
+
+                fragmentProxy.deferredOutput.await()
             }
         }
 
@@ -236,22 +228,21 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         ): FlowResult<NewOutput>
                 where Controller : BusinessFlowController<NewInput, NewOutput> {
 
-            val flowController = controller.newInstance()
-            childFlows.add(flowController)
+            return withContext(Dispatchers.Default) {
+                val flowController = controller.newInstance()
+                childFlows.add(flowController)
+                // businessDeferred is resolvable outside of newly launched flow to handle android back
 
-            // businessDeferred is resolvable outside of newly launched flow to handle android back
-            try {
-                val flowResult = flowController.launchFlow(input)
-                businessDeferred.complete(FlowResult.Completed(flowResult))
-            } catch (t: Throwable) {
-                businessDeferred.completeExceptionally(t)
-            }
+                val flowResult = async {
+                    flowController.launchFlow(input).let { FlowResult.Completed(it) }
+                } as Deferred<FlowResult<NewOutput>>
 
-            return try {
-                (businessDeferred.await() as FlowResult<NewOutput>)
-            } finally {
-                childFlows.remove(flowController)
-                businessDeferred = CompletableDeferred()
+                try {
+                    listOf(businessDeferred, flowResult).awaitFirst().let { it as FlowResult<NewOutput> }
+                } finally {
+                    childFlows.remove(flowController)
+                    businessDeferred = CompletableDeferred()
+                }
             }
         }
     }
