@@ -122,7 +122,10 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
         this.childFlows.firstOrNull()
             .let {
                 when (it) {
-                    is AndroidFlowController<*, *> -> it.handleBack()
+                    is AndroidFlowController<*, *> -> {
+                        activeFragment = null
+                        it.handleBack()
+                    }
                     is BusinessFlowController<*, *> -> businessDeferred.resolve(FlowResult.Back)
                     else -> this.activeFragment?.back()
                 }
