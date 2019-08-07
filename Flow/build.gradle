@@ -4,7 +4,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
 //    testImplementation project(':FlowTest')
-    implementation project(':PromiseKt')
+    implementation "com.github.inmotionsoftware:promisekt:$promise_version"
     testImplementation 'junit:junit:4.12'
 }
 
