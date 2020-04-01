@@ -6,8 +6,6 @@ import com.inmotionsoftware.promisekt.thenMap
 
 abstract class AndroidFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
 
-    interface BackState
-
     internal abstract fun resume()
 
     internal abstract fun handleBack()

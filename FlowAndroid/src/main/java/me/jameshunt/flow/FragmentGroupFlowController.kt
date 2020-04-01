@@ -9,7 +9,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId
 ) : AndroidFlowController<Input, Output>() {
 
-    protected object Back : BackState, State
+    protected object Back: State
     protected data class Done<Output>(override val output: Output) : DoneState<Output>, State
 
     private var groupResult: Promise<Unit>? = null
