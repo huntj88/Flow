@@ -28,7 +28,10 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
     ): FragmentType {
         fragmentManager
             .beginTransaction()
-            .setCustomAnimations(R.anim.abc_grow_fade_in_from_bottom, R.anim.abc_shrink_fade_out_from_bottom)
+            .setCustomAnimations(
+                R.anim.abc_grow_fade_in_from_bottom,
+                R.anim.abc_shrink_fade_out_from_bottom
+            )
             .replace(viewId, fragment as Fragment, tag)
             .commit()
 
@@ -50,13 +53,14 @@ internal class FragmentDisplayManager(private val fragmentManager: FragmentManag
     }
 
     fun removeAll() {
-        fragmentManager.beginTransaction()
+        fragmentManager
+            .beginTransaction()
             .also { transaction ->
                 fragmentManager.fragments.forEach {
                     transaction.remove(it)
                 }
             }
-            .let { it.commitNowAllowingStateLoss() }
+            .commitNowAllowingStateLoss()
     }
 
     fun getVisibleFragmentProxy(viewId: ViewId): FragmentProxy<*, *, *>? {

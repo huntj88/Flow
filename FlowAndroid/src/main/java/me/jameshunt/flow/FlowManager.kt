@@ -1,6 +1,6 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.catch
+import com.inmotionsoftware.promisekt.ensure
 import me.jameshunt.flow.promise.DispatchExecutor
 import java.lang.ref.WeakReference
 
@@ -35,11 +35,9 @@ internal object FlowManager {
             false -> this.rootFlow = flowActivity.getInitialGroupFlow().also { rootFlow ->
                 rootFlow
                     .launchFlow(flowActivity.getInitialArgs())
-                    .catch { it.printStackTrace() }
-                    .finally {
+                    .ensure {
                         this.rootFlow = null
                         this.flowActivity.onFlowFinished()
-                        println("flow completed")
                     }
             }
         }
@@ -104,7 +102,11 @@ internal object FlowManager {
             true -> this
 
             // fragmentFlowControllers will only ever have one child
-            false -> (childFlows.mapNotNull { it as? FragmentFlowController<*, *> }.firstOrNull())?.getFragmentFlowLeaf() ?: this
+            false -> childFlows
+                .mapNotNull { it as? FragmentFlowController<*, *> }
+                .firstOrNull()
+                ?.getFragmentFlowLeaf()
+                ?: this
         }
     }
 }

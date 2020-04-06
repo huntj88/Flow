@@ -34,7 +34,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
 
     internal var viewId: ViewId = 0 // is only set once at the beginning
 
-    private var flowFunctions: AndroidFlowFunctions = AndroidFlowFunctionsImpl()
+    private val flowFunctions: AndroidFlowFunctions = AndroidFlowFunctionsImpl()
 
     private var activeFragment: FragmentProxy<*, *, *>? = null
 
