@@ -77,12 +77,12 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
         }
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
 
-        // DialogFragments are kept around in FragmentManager memory longer,
-        // don't let it resolve if fragment is from old activity
-        if(proxy?.fragment?.get() == this) {
+        // is state is saved then dialog is triggered from a config change and will be recreated
+        // is state is not saved then dialog is closing, and back should be called
+        if(!isStateSaved) {
             proxy?.back()
         }
     }
