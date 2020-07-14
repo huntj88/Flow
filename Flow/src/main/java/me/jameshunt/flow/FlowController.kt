@@ -9,6 +9,7 @@ abstract class FlowController<Input, Output> {
 
     data class InitialState<Input>(val input: Input) : State
 
+    @Deprecated("useless interface, still in generated code")
     interface DoneState<Output> {
         val output: Output
     }
