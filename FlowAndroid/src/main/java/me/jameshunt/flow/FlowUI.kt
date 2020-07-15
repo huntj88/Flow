@@ -3,12 +3,11 @@ package me.jameshunt.flow
 import android.content.DialogInterface
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import com.inmotionsoftware.promisekt.Promise
 
 interface FlowUI<Input, Output> {
     var proxy: FragmentProxy<Input, Output, *>?
 
-    fun flowForResult(): Promise<FlowResult<Output>>
+    suspend fun flowForResult(): FlowResult<Output>
     fun getAndConsumeInputData(): FlowUIInput<Input>
 }
 
@@ -23,9 +22,9 @@ abstract class FlowFragment<Input, Output> : Fragment(), FlowUI<Input, Output> {
 
     private var newInput = false
 
-    final override fun flowForResult(): Promise<FlowResult<Output>> {
+    final override suspend fun flowForResult(): FlowResult<Output> {
         newInput = true
-        return proxy!!.deferredPromise.promise
+        return proxy!!.deferredPromise.await()
     }
 
     override fun getAndConsumeInputData(): FlowUIInput<Input> {
@@ -49,9 +48,9 @@ abstract class FlowDialogFragment<Input, Output> : DialogFragment(), FlowUI<Inpu
 
     private var newInput = false
 
-    final override fun flowForResult(): Promise<FlowResult<Output>> {
+    final override suspend fun flowForResult(): FlowResult<Output> {
         newInput = true
-        return proxy!!.deferredPromise.promise
+        return proxy!!.deferredPromise.await()
     }
 
     override fun getAndConsumeInputData(): FlowUIInput<Input> {

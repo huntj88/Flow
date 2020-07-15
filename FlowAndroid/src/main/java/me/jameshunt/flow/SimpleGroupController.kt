@@ -1,6 +1,5 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.Promise
 
 class SimpleGroupController<Input, Output> :
     FragmentGroupFlowController<SimpleGroupController.SimpleGroupInput<Input, Output>, Output>(R.layout.group_simple) {
@@ -23,10 +22,10 @@ class SimpleGroupController<Input, Output> :
         val input: Input
     )
 
-    override fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): Promise<State> {
+    override suspend fun startFlowInGroup(groupInput: SimpleGroupInput<Input, Output>): State {
         return this.flow(groupInput.flow, R.id.groupSimple, groupInput.input).forResult<Output, State>(
-            onBack = { Promise.value(Back) },
-            onComplete = { Promise.value(Done(it)) }
+            onBack = { Back },
+            onComplete = { Done(it) }
         )
     }
 }

@@ -1,14 +1,12 @@
 package me.jameshunt.flow
 
-import com.inmotionsoftware.promisekt.ensure
-import me.jameshunt.flow.promise.DispatchExecutor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 internal object FlowManager {
-
-    init {
-        DispatchExecutor.setMainExecutor()
-    }
 
     private var rootFlow: AndroidFlowController<*, Unit>? = null
 
@@ -30,16 +28,20 @@ internal object FlowManager {
     fun launchFlow(flowActivity: FlowActivity<*>) {
         this.transientActivity = WeakReference(flowActivity)
 
-        when (shouldResume) {
-            true -> this.resumeActiveFlowControllers()
-            false -> this.rootFlow = flowActivity.getInitialGroupFlow().also { rootFlow ->
-                rootFlow
-                    .launchFlow(flowActivity.getInitialArgs())
-                    .ensure {
-                        this.rootFlow = null
-                        this.flowActivity.onFlowFinished()
+
+            when (shouldResume) {
+                true -> this@FlowManager.resumeActiveFlowControllers()
+                false -> this@FlowManager.rootFlow =
+                    flowActivity.getInitialGroupFlow().also { rootFlow ->
+                        GlobalScope.launch(Dispatchers.Main) {
+                            try {
+                                rootFlow.launchFlow(flowActivity.getInitialArgs()).await()
+                            } finally {
+                                this@FlowManager.rootFlow = null
+                                this@FlowManager.flowActivity.onFlowFinished()
+                            }
+                        }
                     }
-            }
         }
     }
 

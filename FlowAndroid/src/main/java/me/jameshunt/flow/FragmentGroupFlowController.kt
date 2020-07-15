@@ -1,18 +1,19 @@
 package me.jameshunt.flow
 
 import android.view.ViewGroup
-import com.inmotionsoftware.promisekt.Promise
-import com.inmotionsoftware.promisekt.ensure
-import com.inmotionsoftware.promisekt.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 abstract class FragmentGroupFlowController<Input, Output>(
     private val layoutId: LayoutId
 ) : AndroidFlowController<Input, Output>() {
 
-    protected object Back: State
+    protected object Back : State
     protected data class Done<Output>(override val output: Output) : DoneState<Output>, State
 
-    private var groupResult: Promise<Unit>? = null
+    private var groupResult: Job? = null
 
     private var initialState: InitialState<Input>? = null
 
@@ -23,12 +24,16 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
         if (groupResult != null) return
 
-        groupResult = startFlowInGroup(state.input).map {
-            when (it) {
-                is Back -> super.onDone(FlowResult.Back)
-                is Done<*> -> {
-                    val output = FlowResult.Completed(it.output) as FlowResult<Output>
-                    super.onDone(output)
+
+        //TODO no global scope here
+        groupResult = GlobalScope.launch(Dispatchers.Main) {
+            startFlowInGroup(state.input).also {
+                when (it) {
+                    is Back -> super.onDone(FlowResult.Back)
+                    is Done<*> -> {
+                        val output = FlowResult.Completed(it.output) as FlowResult<Output>
+                        super.onDone(output)
+                    }
                 }
             }
         }
@@ -36,13 +41,13 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
     open fun setupGroup(layout: ViewGroup) {}
 
-    abstract fun startFlowInGroup(groupInput: Input): Promise<State>
+    abstract suspend fun startFlowInGroup(groupInput: Input): State
 
-    fun <NewInput, NewOutput, Controller> flow(
+    suspend fun <NewInput, NewOutput, Controller> flow(
         controller: Class<Controller>,
         viewId: ViewId,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>>
+    ): FlowResult<NewOutput>
             where Controller : FragmentFlowController<NewInput, NewOutput> {
 
         val flowController = controller.newInstance().apply {
@@ -51,7 +56,9 @@ abstract class FragmentGroupFlowController<Input, Output>(
 
         childFlows.add(flowController)
 
-        return flowController.launchFlow(input).ensure {
+        return try {
+            flowController.launchFlow(input).await()
+        } finally {
             childFlows.remove(flowController)
         }
     }

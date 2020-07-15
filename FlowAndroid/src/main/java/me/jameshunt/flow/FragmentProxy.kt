@@ -1,8 +1,7 @@
 package me.jameshunt.flow
 
 import androidx.fragment.app.Fragment
-import com.inmotionsoftware.promisekt.DeferredPromise
-import com.inmotionsoftware.promisekt.isPending
+import kotlinx.coroutines.CompletableDeferred
 import java.lang.ref.WeakReference
 import java.util.UUID
 
@@ -21,9 +20,9 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
 
     internal var input: FragInput? = null
 
-    internal var deferredPromise: DeferredPromise<FlowResult<FragOutput>> = DeferredPromise()
+    internal var deferredPromise: CompletableDeferred<FlowResult<FragOutput>> = CompletableDeferred()
         get() {
-            field = if (field.promise.isPending) field else DeferredPromise()
+            field = if (field.isActive) field else CompletableDeferred()
             return field
         }
 
@@ -55,16 +54,16 @@ class FragmentProxy<FragInput, FragOutput, FragmentType : FlowUI<FragInput, Frag
 
     internal fun resolve(output: FragOutput) {
         saveState()
-        this.deferredPromise.resolve(FlowResult.Completed(output))
+        this.deferredPromise.complete(FlowResult.Completed(output))
     }
 
     internal fun back() {
         saveState()
-        this.deferredPromise.resolve(FlowResult.Back)
+        this.deferredPromise.complete(FlowResult.Back)
     }
 
     internal fun fail(error: Throwable) {
         state = null
-        this.deferredPromise.reject(error)
+        this.deferredPromise.completeExceptionally(error)
     }
 }

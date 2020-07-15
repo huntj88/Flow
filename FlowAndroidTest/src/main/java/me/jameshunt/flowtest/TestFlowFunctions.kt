@@ -36,30 +36,27 @@ class TestFlowFunctions : AndroidFlowFunctions {
         mockedResults[fragment as Class<Any>] = thenReturn as (Any?) -> Any?
     }
 
-    private fun <In, Out>getAndroidFlowMock(clazz: Class<Any>, input: In): Promise<FlowResult<Out>> {
+    private fun <In, Out> getAndroidFlowMock(clazz: Class<Any>, input: In): FlowResult<Out> {
         val computeOutput = mockedResults[clazz] as? (In) -> Out
 
-        return try {
-            val output = computeOutput?.invoke(input)
-                ?: throw IllegalArgumentException("Mock not setup for ${clazz.simpleName}")
+        val output = computeOutput?.invoke(input)
+            ?: throw IllegalArgumentException("Mock not setup for ${clazz.simpleName}")
 
-            Promise.value(FlowResult.Completed(output))
-        } catch (e: Exception) {
-            Promise(e)
-        }
+        return FlowResult.Completed(output)
+
     }
 
-    override fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
+    override suspend fun <NewInput, NewOutput, Controller : FragmentFlowController<NewInput, NewOutput>> flow(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
+    ): FlowResult<NewOutput> {
         return getAndroidFlowMock(controller as Class<Any>, input)
     }
 
-    override fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
+    override suspend fun <FragInput, FragOutput, FragmentType : FlowUI<FragInput, FragOutput>> flow(
         fragmentProxy: FragmentProxy<FragInput, FragOutput, FragmentType>,
         input: FragInput
-    ): Promise<FlowResult<FragOutput>> {
+    ): FlowResult<FragOutput> {
 
         val fragmentClass = fragmentProxy::class.java.getDeclaredField("clazz").let {
             it.isAccessible = true
@@ -69,17 +66,17 @@ class TestFlowFunctions : AndroidFlowFunctions {
         return getAndroidFlowMock(fragmentClass, input)
     }
 
-    override fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
+    override suspend fun <GroupInput, GroupOutput, Controller : FragmentGroupFlowController<GroupInput, GroupOutput>> flowGroup(
         controller: Class<Controller>,
         input: GroupInput
-    ): Promise<FlowResult<GroupOutput>> {
+    ): FlowResult<GroupOutput> {
         return getAndroidFlowMock(controller as Class<Any>, input)
     }
 
-    override fun <NewInput, NewOutput, Controller : BusinessFlowController<NewInput, NewOutput>> flowBusiness(
+    override suspend fun <NewInput, NewOutput, Controller : BusinessFlowController<NewInput, NewOutput>> flowBusiness(
         controller: Class<Controller>,
         input: NewInput
-    ): Promise<FlowResult<NewOutput>> {
+    ): FlowResult<NewOutput> {
         return getAndroidFlowMock(controller as Class<Any>, input)
     }
 }
