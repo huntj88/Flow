@@ -2,7 +2,7 @@ package me.jameshunt.flow
 
 abstract class AndroidFlowController<Input, Output> : FlowController<Input, FlowResult<Output>>() {
 
-    internal abstract fun resume()
+    internal abstract suspend fun resume()
 
     internal abstract fun handleBack()
 

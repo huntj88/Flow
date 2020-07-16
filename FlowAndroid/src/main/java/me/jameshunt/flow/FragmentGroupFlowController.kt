@@ -71,7 +71,7 @@ abstract class FragmentGroupFlowController<Input, Output>(
             .handleBack()
     }
 
-    final override fun resume() {
+    final override suspend fun resume() {
         this.onStart(initialState as InitialState<Input>)
     }
 }

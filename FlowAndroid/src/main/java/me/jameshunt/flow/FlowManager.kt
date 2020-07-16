@@ -1,12 +1,12 @@
 package me.jameshunt.flow
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
+import kotlin.coroutines.CoroutineContext
 
-internal object FlowManager {
+internal object FlowManager: CoroutineScope by object: CoroutineScope{
+    override val coroutineContext: CoroutineContext = Job() + Dispatchers.Main
+} {
 
     private var rootFlow: AndroidFlowController<*, Unit>? = null
 
@@ -30,10 +30,10 @@ internal object FlowManager {
 
 
             when (shouldResume) {
-                true -> this@FlowManager.resumeActiveFlowControllers()
+                true -> launch(Dispatchers.Main) { this@FlowManager.resumeActiveFlowControllers() }
                 false -> this@FlowManager.rootFlow =
                     flowActivity.getInitialGroupFlow().also { rootFlow ->
-                        GlobalScope.launch(Dispatchers.Main) {
+                        launch(Dispatchers.Main) {
                             try {
                                 rootFlow.launchFlow(flowActivity.getInitialArgs()).await()
                             } finally {
@@ -49,7 +49,7 @@ internal object FlowManager {
         (rootFlow as AndroidFlowController<*, *>).handleBack()
     }
 
-    fun resumeActiveFlowControllers() {
+    suspend fun resumeActiveFlowControllers() {
         fragmentDisplayManager.removeAll()
 
         val flowGroup = (rootFlow!! as FragmentGroupFlowController<*, *>).findGroup()

@@ -2,7 +2,6 @@ package me.jameshunt.flow
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 typealias ViewId = Int
@@ -83,7 +82,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
      * the fragment reattaches itself to the existing promise
      */
 
-    final override fun resume() {
+    final override suspend fun resume() {
         (activeFragment as? FragmentProxy<Any?, Any?, FlowFragment<Any?, Any?>>)?.let {
             fun showFragment() = FlowManager.fragmentDisplayManager.show(
                 fragmentProxy = it,
@@ -206,7 +205,7 @@ abstract class FragmentFlowController<Input, Output> : AndroidFlowController<Inp
                 // from committing transaction after onSavedInstanceState,
                 // or view does not exist
                 uncommittedTransaction = {
-                    GlobalScope.launch(Dispatchers.Main) {
+                    FlowManager.launch(Dispatchers.Main) {
                         try {
                             showFragmentForResult()
                         } finally {
